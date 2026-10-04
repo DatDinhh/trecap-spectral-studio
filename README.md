@@ -22,7 +22,7 @@ If the port is occupied, use `python run.py --port 8771`. Stop with Ctrl+C. Avoi
 
 ## What to try
 
-1. Select Chainsaw, Frequency switch, or Brief added tone.
+1. Select one of the four machine recordings or eight synthetic controls.
 2. Select one of that recording's available thresholds and load the capture.
 3. Listen before FPGA, listen after FPGA, or hear their difference. All three use the same playback gain.
 4. Follow the spectrum, spectrogram, waveform, and 16-band downstream consumer while audio plays.
@@ -30,13 +30,24 @@ If the port is occupied, use `python run.py --port 8771`. Stop with Ctrl+C. Avoi
 
 ## Included evidence and limits
 
-The selected set contains 3 sources and 12 actual captures:
+The catalog contains all 12 shareable built-in sounds and 40 actual captures.
+Previously published result versions remain in the repository, so the exported
+files currently contain 41 capture versions. Private audio uploads are excluded.
 
 | Source | Included squared-magnitude thresholds |
 | --- | --- |
 | Chainsaw | 0, 10^7, 10^8, 10^9, 10^10 |
-| Frequency switch | 0, 10^7, 10^9 |
+| Engine | 0, 10^7, 10^8, 10^10, 10^11 |
+| Vacuum cleaner | 0, 10^7, 10^8 |
+| Washing machine | 0, 10^7, 10^8 |
+| Silence | 0, 10^7, 10^9 |
+| Steady 1.5 kHz tone | 0, 10^7 |
+| Added 9 kHz tone, amplitude 16 | 0, 10^7 |
+| Added 9 kHz tone, amplitude 32 | 0, 10^7 |
+| Added 9 kHz tone, amplitude 64 | 0, 10^7, 10^8, 10^10 |
+| Frequency switch | 0, 10^7, 10^8, 10^9 |
 | Brief added tone | 0, 10^7, 10^9, 10^11 |
+| Off-bin tones plus noise | 0, 10^7, 10^9 |
 
 The threshold tests squared FFT magnitude in the project's fixed-point units. It is not a decibel value. Missing settings have no included capture and cannot be selected.
 
@@ -44,7 +55,7 @@ Original audio is the prepared mono 48 kHz, signed 12-bit signal supplied to the
 
 Graphs and benchmark values are saved measurements from the original experiment. CPU timing labels refer to the original laptop, not the computer opening this demo. The 16-band consumer is a spectral-monitoring computation, not YAMNet inference. Lower spectral packet size is distinct from smaller WAV files, and lower downstream CPU work does not establish faster FPGA FFT/IFFT computation or lower system energy.
 
-Stage replay is available only for captures with an actual saved event history. Other captures still support audio, charts, and recorded metrics. The data set is a selected demonstration, not a complete benchmark campaign or a validated diagnostic application.
+Stage replay is available for 12 captures with an actual saved event history. Other captures still support audio, charts, and recorded metrics. The data set is a demonstration of the available built-in recordings, not a complete benchmark campaign or a validated diagnostic application. The full data bundle occupies approximately 208 MB; each result is loaded only when selected.
 
 ## Files and validation
 
@@ -67,6 +78,6 @@ To add a result, export a verified physical capture with a shareable source lice
 
 ## Licenses and project
 
-Code is MIT licensed by Sigma Force. Audio and dataset-derived content retain their own licenses; see [audio attribution](demo/ATTRIBUTION.md) and [the ESC-50 license](demo/ESC50-LICENSE.txt). The ESC-50 collection is CC BY-NC 3.0; its included Chainsaw recording is individually CC-BY. Do not treat the MIT code license as an audio license.
+Code is MIT licensed by Sigma Force. Audio and dataset-derived content retain their own licenses; see [audio attribution](demo/ATTRIBUTION.md) and [the ESC-50 license](demo/ESC50-LICENSE.txt). The ESC-50 collection is CC BY-NC 3.0; all four included natural recordings are individually identified as CC-BY. The eight synthetic signals are project-generated. Do not treat the MIT code license as an audio license.
 
 Hardware project: [DatDinhh/T_RECAP](https://github.com/DatDinhh/T_RECAP).
