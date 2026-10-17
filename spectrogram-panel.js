@@ -76,7 +76,7 @@
       this.el("spectrogram-3d-guide").hidden=this.mode!=="3d";
       this.host.classList.toggle("is-3d",this.mode==="3d");
       this.host.querySelector(".chart-caption").textContent=this.mode==="3d"
-        ?"Time × frequency × relative power. Both surfaces share the original peak, camera and display range. The plum cursor follows audio playback. Changing this view does not run the board."
+        ?"Time × frequency × relative power. Both surfaces share the original peak, camera and display range. The bright cursor follows audio playback. Changing this view does not run the board."
         :"Time × frequency, with color showing relative power from -100 to 0 dB. Both maps share the original peak. The cursor follows audio playback. Changing this view does not run the board.";
       this.refresh();
       // Existing 2D charts redraw after the previously hidden canvases get layout.
