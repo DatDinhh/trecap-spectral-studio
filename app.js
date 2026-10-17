@@ -2,6 +2,7 @@
 "use strict";
 const $ = id => document.getElementById(id);
 const flow = new TRecapPipeline.View(document);
+const spectralExplorer = typeof TRecapSpectrogramPanel === "object" ? new TRecapSpectrogramPanel.View(document) : null;
 const COLORS = {original:"#71a9ff",processed:"#45e2be",ink:"#e6eef8",muted:"#96a8bb",grid:"#263346",orange:"#ffbd73"};
 const superscript = {0:"⁰",1:"¹",2:"²",3:"³",4:"⁴",5:"⁵",6:"⁶",7:"⁷",8:"⁸",9:"⁹"};
 const state = {config:null,result:null,raw:null,sourceId:null,pendingThreshold:1e10,availableThresholds:[],loadedEntry:null,audioReady:false,busy:false,replaying:false,replayVersion:0,audioContext:null,buffers:{},audioMode:"original",node:null,gain:null,playing:false,position:0,startedAt:0,frame:-1,group:-1,autoTimer:null,loadVersion:0,requestVersion:0,spectrumPeak:1,heat:{},lastRender:0,preview:null,playVersion:0,audioStarting:false};
@@ -150,6 +151,7 @@ function drawAll(){
  $("seek").setAttribute("aria-valuetext",`${fmt(t,2)} of ${fmt(state.result?.duration||0,2)} seconds`);
  setText("current-time",clockTime(t));
  drawSpectrum();drawWaveform();drawSpectrogram("original");drawSpectrogram("processed");drawBands();drawEvents();
+ spectralExplorer?.update(state.result,t,state.spectrumPeak);
 }
 
 

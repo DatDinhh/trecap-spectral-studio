@@ -134,7 +134,29 @@
         <div class="chart-grid">
           <article class="panel chart-card"><div class="card-heading"><div><p class="eyebrow">01 · FREQUENCY CONTENT</p><h2>Before & after spectrum</h2></div><span class="readout" id="spectrum-time">N/A</span></div><div class="canvas-wrap"><canvas id="spectrum" aria-label="Original and processed power spectrum at the playback position" role="img"></canvas></div><p class="chart-caption">One dB scale, relative to the unthresholded reference peak. Weak components may be removed.</p></article>
           <article class="panel chart-card"><div class="card-heading"><div><p class="eyebrow">02 · RECONSTRUCTED SOUND</p><h2>Aligned waveform</h2></div><span class="readout">2-second window</span></div><div class="canvas-wrap"><canvas id="waveform" aria-label="Aligned original and reconstructed audio waveforms" role="img"></canvas></div><p class="chart-caption">The reconstructed waveform is aligned to the original. Playback gain is identical.</p></article>
-          <article class="panel chart-card wide"><div class="card-heading"><div><p class="eyebrow">03 · SPECTRUM OVER TIME</p><h2>Follow the sound across the clip</h2></div><div class="heat-legend"><span>Low energy</span><span class="heat-ramp"></span><span>High</span></div></div><div class="spectrogram-grid"><div><h3><i class="swatch original"></i> Original</h3><div class="canvas-wrap spectrogram-wrap"><canvas id="spectrogram-original" aria-label="Original audio spectrogram with synchronized playback cursor" role="img"></canvas></div></div><div><h3><i class="swatch processed"></i> FPGA output</h3><div class="canvas-wrap spectrogram-wrap"><canvas id="spectrogram-processed" aria-label="FPGA processed spectrogram on the same scale" role="img"></canvas></div></div></div><p class="chart-caption">The shared color scale makes removed components visible. The cursor follows the sound you hear.</p></article>
+          <article class="panel chart-card wide spectrogram-explorer" id="spectrogram-explorer" aria-labelledby="spectrogram-title">
+            <div class="card-heading spectrogram-heading">
+              <div><p class="eyebrow">03 · EXPLORE THE SPECTRUM</p><h2 id="spectrogram-title">Sound, in another dimension.</h2><p class="spectrogram-intro">See where energy lives, and what the FPGA removes.</p></div>
+              <div class="spectrogram-mode" role="group" aria-label="Spectrogram display mode"><button type="button" data-spectrogram-mode="3d" aria-pressed="true">3D surface</button><button type="button" data-spectrogram-mode="2d" aria-pressed="false">2D map</button></div>
+            </div>
+            <div class="spectrogram-toolbar" id="spectrogram-3d-controls">
+              <div class="spectrogram-settings"><label for="spectrogram-frequency">Frequency range<select id="spectrogram-frequency"><option value="6000">0 to 6 kHz</option><option value="12000" selected>0 to 12 kHz</option><option value="24000">0 to 24 kHz</option></select></label><label for="spectrogram-depth">Display depth<select id="spectrogram-depth"><option value="-60">60 dB</option><option value="-80" selected>80 dB</option><option value="-100">100 dB</option></select></label></div>
+              <div class="spectrogram-view-actions" role="group" aria-label="3D camera controls"><button type="button" data-spectrogram-preset="perspective">Reset view</button><button type="button" data-spectrogram-preset="top">Top view</button><button type="button" id="spectrogram-expand" aria-expanded="false" aria-controls="spectrogram-volume">Expand view</button></div>
+            </div>
+            <p class="spectrogram-status" id="spectrogram-status" role="status" hidden></p>
+            <div id="spectrogram-volume">
+              <div class="spectrogram-scene-meta"><span class="linked-camera" id="spectrogram-camera-state">Perspective · cameras linked</span><span id="spectrogram-position">Playback 0.00 s</span></div>
+              <div class="spectrogram-3d-grid">
+                <section class="spectrogram-3d-pane" aria-labelledby="spectrogram-original-heading"><h3 id="spectrogram-original-heading"><span><i class="swatch original"></i> Before FPGA</span><small>Unthresholded reference</small></h3><div class="spectrogram3d-stage"><canvas id="spectrogram3d-original" tabindex="0" aria-label="Interactive 3D spectrum before FPGA thresholding. Drag to rotate. Use arrow keys to orbit, plus or minus to zoom, and Home to reset." aria-describedby="spectrogram-3d-guide"></canvas></div></section>
+                <section class="spectrogram-3d-pane" aria-labelledby="spectrogram-processed-heading"><h3 id="spectrogram-processed-heading"><span><i class="swatch processed"></i> After FPGA</span><small>Selected threshold</small></h3><div class="spectrogram3d-stage"><canvas id="spectrogram3d-processed" tabindex="0" aria-label="Interactive 3D spectrum after FPGA thresholding on the same power scale. Drag to rotate. Use arrow keys to orbit, plus or minus to zoom, and Home to reset." aria-describedby="spectrogram-3d-guide"></canvas></div></section>
+              </div>
+              <div class="spectrogram-scale-row"><div class="spectrogram-color-key"><span>Low</span><span class="spectrogram-color-ramp"></span><span>High</span></div><span id="spectrogram-scale">-80 to 0 dB · shared original peak</span></div>
+              <p class="spectrogram-density" id="spectrogram-density">Recorded power values become the surface height and color.</p>
+            </div>
+            <div class="spectrogram-grid" id="spectrogram-map" hidden><div><h3><i class="swatch original"></i> Original</h3><div class="canvas-wrap spectrogram-wrap"><canvas id="spectrogram-original" aria-label="Original audio spectrogram with synchronized playback cursor" role="img"></canvas></div></div><div><h3><i class="swatch processed"></i> FPGA output</h3><div class="canvas-wrap spectrogram-wrap"><canvas id="spectrogram-processed" aria-label="FPGA processed spectrogram on the same scale" role="img"></canvas></div></div></div>
+            <p class="spectrogram-interaction" id="spectrogram-3d-guide"><span>Drag to rotate</span><span>Scroll to zoom</span><span>Arrow keys to orbit</span><span>+ / - to zoom</span><span>Home to reset</span></p>
+            <p class="chart-caption">Time × frequency × relative power. Both surfaces share the original peak, camera and display range. The bright cursor follows audio playback. Changing this view does not run the board.</p>
+          </article>
         </div>
       </section>
       <section class="view-panel" id="panel-consumer" data-view-panel="consumer" role="tabpanel" aria-labelledby="tab-consumer" tabindex="0" hidden>
@@ -151,6 +173,8 @@
     </div>
   </main>
   <script src="pipeline.js" defer></script>
+  <script src="spectrogram3d.js" defer></script>
+  <script src="spectrogram-panel.js" defer></script>
   <script src="app.js" defer></script>
 </body>
 </html>

@@ -1,5 +1,6 @@
 """Validate portable assets without packages, hardware, or internet access."""
 from array import array
+from html.parser import HTMLParser
 import hashlib
 import json
 from pathlib import Path, PurePosixPath
@@ -8,6 +9,38 @@ import sys
 import wave
 
 ROOT = Path(__file__).resolve().parent
+DASHBOARD_SCRIPTS = ('pipeline.js', 'spectrogram3d.js', 'spectrogram-panel.js', 'app.js')
+
+
+class DashboardLinks(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.scripts = []
+        self.stylesheets = []
+
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        if tag == 'script':
+            self.scripts.append(attrs)
+        if tag == 'link' and 'stylesheet' in attrs.get('rel', '').split():
+            self.stylesheets.append(attrs.get('href'))
+
+
+def validate_dashboard():
+    """Keep the offline dashboard's script dependencies present and ordered."""
+    page = DashboardLinks()
+    page.feed(asset('index.html').read_text(encoding='utf-8'))
+    sources = [script.get('src') for script in page.scripts]
+    assert sources == list(DASHBOARD_SCRIPTS), 'Dashboard scripts are missing, duplicated or out of dependency order'
+    assert page.stylesheets == ['styles.css'], 'Dashboard stylesheet must be the local styles.css'
+    for script in page.scripts:
+        assert 'defer' in script and 'async' not in script, 'Dashboard scripts must preserve deferred dependency order'
+        asset(script['src'])
+    for stylesheet in page.stylesheets:
+        asset(stylesheet)
+    for name in ('index.html', *DASHBOARD_SCRIPTS, 'styles.css'):
+        source = asset(name).read_text(encoding='utf-8')
+        assert '\u2013' not in source and '\u2014' not in source, f'Forbidden dash character: {name}'
 
 
 def asset(url):
@@ -32,6 +65,7 @@ def pcm(url):
 
 
 def main():
+    validate_dashboard()
     integrity = read_json(ROOT / 'demo/integrity.json')
     for url, expected in integrity.items():
         data = asset(url).read_bytes()
@@ -127,11 +161,9 @@ def main():
         text = p.read_text(encoding='utf-8')
         assert not private.search(text), f'Private metadata marker: {p.name}'
         assert '\u2013' not in text and '\u2014' not in text and '\u00c2\u00b7' not in text
-    for name in ('index.html', 'app.js', 'pipeline.js', 'styles.css'):
-        source = (ROOT / name).read_text(encoding='utf-8')
-        assert '\u2013' not in source and '\u2014' not in source, f'Forbidden dash character: {name}'
     print(f'PASS: {len(integrity)} asset hashes, {len(source_ids)} sources, {count} selectable captures, {len(retained)} retained versions, {replays} recorded timelines.')
     print('PASS: mono PCM16 audio, exact difference samples, threshold-zero equality, relative URLs, export privacy markers.')
+    print('PASS: offline dashboard assets and deferred renderer/controller dependency order.')
 
 
 if __name__ == '__main__':

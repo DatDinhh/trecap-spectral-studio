@@ -25,8 +25,16 @@ If the port is occupied, use `python run.py --port 8771`. Stop with Ctrl+C. Avoi
 1. Select one of the four machine recordings or eight synthetic controls.
 2. Select one of that recording's available thresholds and load the capture.
 3. Listen before FPGA, listen after FPGA, or hear their difference. All three use the same playback gain.
-4. Follow the spectrum, spectrogram, waveform, and 16-band downstream consumer while audio plays.
+4. Open **Signal comparison** and explore the paired **3D surface** spectrograms. Drag either surface to rotate both, scroll to zoom, or select **Top view**. The bright cursor follows audio playback. **2D map** preserves the original spectrogram view.
 5. Where available, replay the recorded processing timeline. Its timestamps and transfer counts come from a saved hardware session. The board's internal FFT, threshold, and IFFT illustration does not report separate measured stage timings.
+
+## Interactive 3D spectrogram
+
+The three axes show time, frequency, and relative spectral power. Original and processed surfaces share the same camera, frequency range, display depth, and original-peak reference. Height and color use `10 log10(power / original peak)`, clipped to the selected display floor. These are relative dB values, not dBFS. A threshold remains a squared-magnitude value, not a dB setting.
+
+Choose a 6, 12, or 24 kHz range and a 60, 80, or 100 dB display depth. **Expand view** enlarges the comparison; Escape closes it. Arrow keys rotate a focused canvas, `+` and `-` zoom, and Home resets the camera. Both surfaces follow the same playback position and selected capture.
+
+For responsive rendering, the view groups playback-range spectral frames into at most 256 time slices, retaining each frequency bin's maximum within each group. A slice is positioned at its group's timestamp midpoint. This is a display summary, not an exact individual FFT frame or a new measurement. The footer reports the grouping and any final flush rows beyond playback that are omitted. Recorded data, audio, packet sizes, and benchmark values remain unchanged. Silence stays at the display floor. WebGL is built in with no external scripts; browsers without working WebGL retain the 2D map.
 
 ## Included evidence and limits
 
@@ -60,6 +68,8 @@ Stage replay is available for 12 captures with an actual saved event history. Ot
 ## Files and validation
 
 - `index.html`, `app.js`, `pipeline.js`, `styles.css`: static dashboard.
+- `spectrogram3d.js`, `spectrogram-panel.js`: offline WebGL renderer and paired-view controls.
+- `test_spectrogram3d.cjs`, `test_spectrogram3d_view.cjs`: numerical scale, pooling, mesh, camera, input-validation, and mocked renderer-lifecycle tests.
 - `demo/catalog.json`: available sources, thresholds, and relative asset URLs.
 - `demo/results/`: sanitized numerical results and provenance.
 - `demo/audio/`: content-addressed playback WAVs, shared where identical.
@@ -69,6 +79,8 @@ Stage replay is available for 12 captures with an actual saved event history. Ot
 - `verify_demo.py`: asset, format, privacy, and integrity checks.
 
 Run `python verify_demo.py` to validate the portable bundle. It checks exported files; it does not rerun hardware or recreate benchmark timings.
+
+Run `node --test test_spectrogram3d.cjs test_spectrogram3d_view.cjs` with Node.js 18 or later for the 19 dependency-free renderer tests. The bundle verifier also checks local dashboard dependencies and script order. Interactive camera, playback, layout, and browser rendering require browser checks in addition to those tests.
 
 ## Publishing edits
 
