@@ -5,7 +5,7 @@
   if (root) root.TreCapSignalLab = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function (root) {
   'use strict';
-  var COLORS = { input: '#83b8ff', output: '#60e5bc', power: '#bd9bff', amber: '#efbc79', text: '#aec5d7', dim: '#69879e', grid: '#294356', bg: '#0a1927' };
+  var COLORS = { input: '#607eaa', output: '#398472', power: '#8d68a7', amber: '#ad7138', text: '#52647b', dim: '#647287', grid: '#d8dde6', bg: '#fffcfa' };
   var STAGES = [
     { name: 'Input', title: 'Start with the signal itself.', badge: 'Recorded input', left: 'The input waveform', right: 'The same signal as PCM samples', leftSource: 'Prepared input', rightSource: 'Prepared input', body: 'This is a 256-sample excerpt of the prepared input. A continuous trace and discrete sample stems show the same values. Your selected time stays fixed as you explore the processing stages.', fact: '48 kHz · signed 12-bit PCM · one buffered clip', kind: 'input' },
     { name: 'Frame + window', title: 'Give the frame a smooth boundary.', badge: 'Derived window view', left: 'Before the window', right: 'After the window', leftSource: 'Prepared input', rightSource: 'Derived window view', body: 'Overlapping 256-sample frames advance by 128 samples. The window scales each input sample before the FFT. Watch the frame edges taper while the samples near the middle remain stronger.', fact: 'Derived with the stored window coefficients · hardware rounding is not emulated', kind: 'window' },
@@ -22,7 +22,7 @@
   function powerDb(value, peak) { var power = safeNumber(value); if (power <= 0) return -80; return clamp(10 * Math.log10(power / Math.max(safeNumber(peak), 1e-20)), -80, 0); }
   function ease(value) { return 1 - Math.pow(1 - clamp(value, 0, 1), 3); }
   function palette(value) {
-    var t = clamp(value, 0, 1), stops = [[8, 23, 37], [31, 66, 98], [32, 140, 151], [111, 210, 170], [247, 220, 140]], at = t * 4, i = Math.min(3, Math.floor(at)), f = at - i;
+    var t = clamp(value, 0, 1), stops = [[241, 239, 247], [211, 224, 239], [164, 209, 207], [135, 171, 188], [112, 102, 143]], at = t * 4, i = Math.min(3, Math.floor(at)), f = at - i;
     return stops[i].map(function (v, channel) { return Math.round(v + (stops[i + 1][channel] - v) * f); });
   }
   function View(mount, callbacks) {
@@ -137,8 +137,8 @@
       if (!kept.length) { empty(c, 'No retained entries in this frame.'); return; }
       for (var j = 0; j < limit; j++) {
         var index = kept[j], x = left + (j % columns) * (width + gap), y = top + Math.floor(j / columns) * (rowHeight + 5), amount = clamp(progress * 2 - j / Math.max(limit, 1), 0, 1);
-        ctx.globalAlpha = .12 + .88 * amount; ctx.fillStyle = '#232e45'; ctx.strokeStyle = '#65577e'; ctx.lineWidth = 1; ctx.fillRect(x, y, width, rowHeight); ctx.strokeRect(x + .5, y + .5, width - 1, rowHeight - 1);
-        text(ctx, 'k' + String(index).padStart(3, '0'), x + 9, y + 15, COLORS.power, 10); text(ctx, compact(model.after[index]), x + 9, y + rowHeight - 8, '#d5d3e8', 11);
+        ctx.globalAlpha = .12 + .88 * amount; ctx.fillStyle = '#eeebf8'; ctx.strokeStyle = '#c8b9dc'; ctx.lineWidth = 1; ctx.fillRect(x, y, width, rowHeight); ctx.strokeRect(x + .5, y + .5, width - 1, rowHeight - 1);
+        text(ctx, 'k' + String(index).padStart(3, '0'), x + 9, y + 15, COLORS.power, 10); text(ctx, compact(model.after[index]), x + 9, y + rowHeight - 8, '#5c4e72', 11);
       }
       ctx.globalAlpha = 1; text(ctx, kept.length + ' retained entries' + (kept.length > limit ? ' · first ' + limit + ' shown' : ''), left, c.h - 20, COLORS.text, 10); text(ctx, 'BIN INDEX / POWER', left, 13, COLORS.dim, 9);
     }
@@ -201,8 +201,8 @@
       ctx.imageSmoothingEnabled = false; ctx.drawImage(heatCache.before, left, top, width, row); ctx.drawImage(heatCache.after, left, top + row + 5, width, row);
       text(ctx, 'Before', 11, top + row / 2 + 3, COLORS.input, 10); text(ctx, 'After', 11, top + row * 1.5 + 8, COLORS.output, 10);
       var duration = Math.max(.001, safeNumber(state.result && state.result.duration)), x = left + clamp(state.position / duration, 0, 1) * width;
-      ctx.strokeStyle = '#e8f5fc'; ctx.lineWidth = 1.3; ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x, top + row * 2 + 5); ctx.stroke();
-      ctx.fillStyle = '#e8f5fc'; ctx.beginPath(); ctx.moveTo(x - 4, 2); ctx.lineTo(x + 4, 2); ctx.lineTo(x, 8); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = '#76566d'; ctx.lineWidth = 1.3; ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x, top + row * 2 + 5); ctx.stroke();
+      ctx.fillStyle = '#76566d'; ctx.beginPath(); ctx.moveTo(x - 4, 2); ctx.lineTo(x + 4, 2); ctx.lineTo(x, 8); ctx.closePath(); ctx.fill();
       text(ctx, '0 s', left, c.h - 3, COLORS.dim, 9); text(ctx, seconds(duration), left + width, c.h - 3, COLORS.dim, 9, 'right');
     }
     function draw(now) { raf = null; if (!canDraw()) return; if (progress < 1) { if (animationStart === null) animationStart = now; progress = reduced.matches ? 1 : Math.min(1, (now - animationStart) / 1850); } drawMain(); drawContext(); if (progress < 1) requestDraw(); }

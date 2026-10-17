@@ -201,11 +201,11 @@
     uniform float u_solid;
     uniform vec4 u_color;
     vec3 palette(float level) {
-      vec3 a = vec3(0.055, 0.105, 0.18);
-      vec3 b = vec3(0.10, 0.31, 0.49);
-      vec3 c = vec3(0.11, 0.66, 0.65);
-      vec3 d = vec3(0.57, 0.88, 0.68);
-      vec3 e = vec3(1.0, 0.89, 0.49);
+      vec3 a = vec3(0.945098, 0.937255, 0.968627);
+      vec3 b = vec3(0.827451, 0.878431, 0.937255);
+      vec3 c = vec3(0.643137, 0.819608, 0.811765);
+      vec3 d = vec3(0.529412, 0.670588, 0.737255);
+      vec3 e = vec3(0.439216, 0.400000, 0.560784);
       float t = clamp(level, 0.0, 1.0) * 4.0;
       if (t < 1.0) return mix(a, b, t);
       if (t < 2.0) return mix(b, c, t - 1.0);
@@ -217,7 +217,7 @@
       float shade = 0.83 + 0.17 * abs(dot(normalize(v_normal), normalize(vec3(-0.3, 0.8, 0.5))));
       gl_FragColor = vec4(palette(v_level) * shade, 1.0);
     }`;
-  const PALETTE = ["#0e1b2e", "#1a4f7d", "#1ca8a6", "#91e0ad", "#ffe37d"];
+  const PALETTE = ["#f1eff7", "#d3e0ef", "#a4d1cf", "#87abbc", "#70668f"];
 
   class View {
     constructor(canvas, options = {}) {
@@ -460,12 +460,12 @@
       if (!this.available || this.contextLost) { this._fallback(); return; }
       const gl = this.gl, l = this.locations;
       gl.viewport(0, 0, this.canvas.width, this.canvas.height);
-      gl.clearColor(0.035, 0.061, 0.096, 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+      gl.clearColor(0.984, 0.976, 0.988, 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
       if (!this.data || !this.surface) { this._fallback("Load recorded spectra to explore the 3D surface"); return; }
       const matrix = cameraMatrix(this.camera, this.width / this.height);
       gl.useProgram(this.program); gl.uniformMatrix4fv(l.matrix, false, matrix);
       gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LEQUAL); gl.disable(gl.CULL_FACE); gl.disable(gl.BLEND);
-      this._solid(this.grid.position, this.grid.count, [0.19, 0.28, 0.36, 1]);
+      this._solid(this.grid.position, this.grid.count, [0.73, 0.77, 0.83, 1]);
       this._position(this.surface.position);
       gl.bindBuffer(gl.ARRAY_BUFFER, this.surface.normal); gl.enableVertexAttribArray(l.normal); gl.vertexAttribPointer(l.normal, 3, gl.FLOAT, false, 0, 0);
       gl.bindBuffer(gl.ARRAY_BUFFER, this.surface.level); gl.enableVertexAttribArray(l.level); gl.vertexAttribPointer(l.level, 1, gl.FLOAT, false, 0, 0);
@@ -479,7 +479,7 @@
       gl.bindBuffer(gl.ARRAY_BUFFER, this.playhead);
       gl.bufferSubData(gl.ARRAY_BUFFER, 0, new Float32Array([xx, 0, zz, xx, h, zz, xx, h, zz, xx, h, -zz,
         xx, h, -zz, xx, 0, -zz, xx, 0, -zz, xx, 0, zz]));
-      gl.disable(gl.DEPTH_TEST); this._solid(this.playhead, 8, [1, 0.73, 0.43, 1]);
+      gl.disable(gl.DEPTH_TEST); this._solid(this.playhead, 8, [0.57, 0.36, 0.44, 1]);
       this._overlay(matrix);
     }
     _clearOverlay() {
@@ -489,7 +489,7 @@
     }
     _fallback(message = this.status) {
       const ctx = this._clearOverlay(); if (!ctx || !this.visible) return;
-      ctx.fillStyle = "#96a8bb"; ctx.font = "12px system-ui, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillStyle = "#647287"; ctx.font = "12px system-ui, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
       const words = message.split(" "), lines = []; let line = "";
       for (const word of words) { const next = line ? `${line} ${word}` : word; if (ctx.measureText(next).width > Math.max(120, this.width - 36) && line) { lines.push(line); line = word; } else line = next; }
       if (line) lines.push(line);
@@ -499,14 +499,14 @@
       const ctx = this._clearOverlay(); if (!ctx) return;
       const { x, z, height } = EXTENT, m = this.data.metadata;
       ctx.font = "11px system-ui, sans-serif"; ctx.textBaseline = "middle";
-      const label = (text, point, dx = 0, dy = 0, align = "center", color = "#a8bacb") => {
+      const label = (text, point, dx = 0, dy = 0, align = "center", color = "#647287") => {
         const p = projectPoint(point, matrix, this.width, this.height); if (!p || p.depth < -1 || p.depth > 1) return;
         const width = ctx.measureText(text).width;
         const leftMargin = align === "right" ? width + 5 : align === "left" ? 5 : width / 2 + 5;
         const rightMargin = align === "left" ? width + 5 : align === "right" ? 5 : width / 2 + 5;
         const px = clamp(p.x + dx, leftMargin, this.width - rightMargin), py = clamp(p.y + dy, 40, this.height - 40);
         const left = align === "right" ? px - width : align === "left" ? px : px - width / 2;
-        ctx.fillStyle = "rgba(7,14,23,0.87)"; ctx.fillRect(left - 3, py - 7, width + 6, 14);
+        ctx.fillStyle = "rgba(255,250,246,0.94)"; ctx.fillRect(left - 3, py - 7, width + 6, 14);
         ctx.textAlign = align; ctx.fillStyle = color; ctx.fillText(text, px, py);
       };
       // At top view height projects onto the same location; the scale bar supplies dB ticks.
@@ -516,27 +516,27 @@
         label(`${Number(t.toFixed(2))}`, [-x + 2 * x * i / 4, 0, z], 0, 15);
         if (i === 0 || i === 2 || i === 4) {
           if (i > 0) label(`${Number((m.maxFrequency * i / 4000).toFixed(1))}`, [x, 0, z - 2 * z * i / 4], 12, -2, "left");
-          if (!top) label(`${Math.round(m.dbFloor * (1 - i / 4))}`, [-x, height * i / 4, z], -12, -3, "right", "#d0dde7");
+          if (!top) label(`${Math.round(m.dbFloor * (1 - i / 4))}`, [-x, height * i / 4, z], -12, -3, "right", "#39465b");
         }
       }
-      label("Time (s)", [0, 0, z], 0, 34, "center", "#d0dde7");
-      label("kHz", [x, 0, -z], 14, -18, "left", "#d0dde7");
-      if (!top) label("dB", [-x, height, z], -10, -18, "right", "#d0dde7");
+      label("Time (s)", [0, 0, z], 0, 34, "center", "#39465b");
+      label("kHz", [x, 0, -z], 14, -18, "left", "#39465b");
+      if (!top) label("dB", [-x, height, z], -10, -18, "right", "#39465b");
       const topPoint = projectPoint([x * (2 * this.time / m.duration - 1), height, -z], matrix, this.width, this.height);
       if (topPoint) {
         const text = `${this.time.toFixed(2)} s`, width = ctx.measureText(text).width + 12;
         const px = clamp(topPoint.x - width / 2, 6, this.width - width - 6), py = clamp(topPoint.y - 22, 39, this.height - 55);
-        ctx.fillStyle = "rgba(9,16,25,0.94)"; ctx.fillRect(px, py, width, 19);
-        ctx.fillStyle = "#ffbd73"; ctx.textAlign = "center"; ctx.fillText(text, px + width / 2, py + 10);
+        ctx.fillStyle = "rgba(255,250,246,0.94)"; ctx.fillRect(px, py, width, 19);
+        ctx.fillStyle = "#925c71"; ctx.textAlign = "center"; ctx.fillText(text, px + width / 2, py + 10);
       }
       const barWidth = Math.min(110, this.width * 0.24), barX = this.width - barWidth - 17, barY = 15;
       const gradient = ctx.createLinearGradient(barX, 0, barX + barWidth, 0);
       PALETTE.forEach((color, i) => gradient.addColorStop(i / (PALETTE.length - 1), color));
       ctx.fillStyle = gradient; ctx.fillRect(barX, barY, barWidth, 7);
-      ctx.font = "10px system-ui, sans-serif"; ctx.fillStyle = "#a8bacb"; ctx.textAlign = "left"; ctx.fillText(`${m.dbFloor} dB`, barX, barY + 16);
+      ctx.font = "10px system-ui, sans-serif"; ctx.fillStyle = "#647287"; ctx.textAlign = "left"; ctx.fillText(`${m.dbFloor} dB`, barX, barY + 16);
       ctx.textAlign = "right"; ctx.fillText("0 dB", barX + barWidth, barY + 16);
-      ctx.textAlign = "left"; ctx.fillStyle = "#c7d7e4"; ctx.fillText(this.width < 360 ? "SHARED ORIGINAL PEAK" : "POWER / SHARED ORIGINAL PEAK", 13, 18);
-      ctx.fillStyle = "#91a5b8"; ctx.font = "10px system-ui, sans-serif";
+      ctx.textAlign = "left"; ctx.fillStyle = "#52647b"; ctx.fillText(this.width < 360 ? "SHARED ORIGINAL PEAK" : "POWER / SHARED ORIGINAL PEAK", 13, 18);
+      ctx.fillStyle = "#647287"; ctx.font = "10px system-ui, sans-serif";
       ctx.fillText(this.width < 360 ? "Drag: orbit | Scroll: zoom | Home: reset" : "Drag to orbit | Scroll to zoom | Arrows / +/- / Home", 13, this.height - 13);
     }
     dispose() {
