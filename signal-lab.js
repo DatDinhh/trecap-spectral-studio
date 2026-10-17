@@ -5,7 +5,7 @@
   if (root) root.TreCapSignalLab = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function (root) {
   'use strict';
-  var COLORS = { input: '#946a27', output: '#af4e5b', power: '#835260', amber: '#9c612a', text: '#684950', dim: '#80666b', grid: '#e2c5be', bg: '#fffaf5' };
+  var COLORS = { input: '#4c6eae', output: '#b6537f', power: '#7856a5', amber: '#986222', text: '#545b79', dim: '#555970', grid: '#d7d8e7', bg: '#fffdf9' };
   var STAGES = [
     { name: 'Input', title: 'Start with the signal itself.', badge: 'Recorded input', left: 'The input waveform', right: 'The same signal as PCM samples', leftSource: 'Prepared input', rightSource: 'Prepared input', body: 'This is a 256-sample excerpt of the prepared input. A continuous trace and discrete sample stems show the same values. Your selected time stays fixed as you explore the processing stages.', fact: '48 kHz · signed 12-bit PCM · one buffered clip', kind: 'input' },
     { name: 'Frame + window', title: 'Give the frame a smooth boundary.', badge: 'Derived window view', left: 'Before the window', right: 'After the window', leftSource: 'Prepared input', rightSource: 'Derived window view', body: 'Overlapping 256-sample frames advance by 128 samples. The window scales each input sample before the FFT. Watch the frame edges taper while the samples near the middle remain stronger.', fact: 'Derived with the stored window coefficients · hardware rounding is not emulated', kind: 'window' },
@@ -22,7 +22,7 @@
   function powerDb(value, peak) { var power = safeNumber(value); if (power <= 0) return -80; return clamp(10 * Math.log10(power / Math.max(safeNumber(peak), 1e-20)), -80, 0); }
   function ease(value) { return 1 - Math.pow(1 - clamp(value, 0, 1), 3); }
   function palette(value) {
-    var t = clamp(value, 0, 1), stops = [[255, 244, 229], [249, 221, 165], [240, 173, 140], [215, 118, 119], [135, 82, 105]], at = t * 4, i = Math.min(3, Math.floor(at)), f = at - i;
+    var t = clamp(value, 0, 1), stops = [[245, 242, 252], [198, 230, 237], [162, 198, 221], [181, 140, 187], [115, 85, 126]], at = t * 4, i = Math.min(3, Math.floor(at)), f = at - i;
     return stops[i].map(function (v, channel) { return Math.round(v + (stops[i + 1][channel] - v) * f); });
   }
   function View(mount, callbacks) {
@@ -69,7 +69,7 @@
       fields.position.textContent = seconds(state.position) + (state.touring && !state.playing ? ' · pinned' : ''); fields.duration.textContent = seconds(state.result && state.result.duration);
       fields.seek.max = String(Math.max(.001, safeNumber(state.result && state.result.duration))); fields.seek.value = String(state.position); fields.seek.disabled = !available;
       fields.transition.textContent = state.touring ? 'Illustrated step ' + (state.stage + 1) + ' of 7' : 'Selected frame';
-      var notes = { input: 'Both views use the same input sample values.', window: 'Ochre: input · dashed: window gain 0 to 1 · rose: windowed input', fft: 'Captured powers use a shared 0 to −80 dB display scale.', threshold: 'Ochre: original powers · rose: retained · dashed: threshold', rebuild: 'Rose: captured output · plum: input minus output', sparse: available ? (model.packetBytes === null || model.packetBytes === undefined ? 'Sparse size not recorded' : compact(model.packetBytes) + ' sparse bytes') + ' / ' + compact(model.denseBytes) + ' dense bytes · ' + safeNumber(model.zeroCount) + ' zero-power bins' : 'Powers and indices are separate from audio.', consumer: model && model.bandAvailable ? (model.bandPreview ? 'Consumer block preview' : 'Consumer block') + ' · ends at ' + seconds(model.bandTime) + ' · shared power scale' : 'A recorded 16-band consumer frame is not available at this time.' };
+      var notes = { input: 'Both views use the same input sample values.', window: 'Blue: input · dashed: window gain 0 to 1 · pink: windowed input', fft: 'Captured powers use a shared 0 to −80 dB display scale.', threshold: 'Blue: original powers · pink: retained · dashed: threshold', rebuild: 'Pink: captured output · violet: input minus output', sparse: available ? (model.packetBytes === null || model.packetBytes === undefined ? 'Sparse size not recorded' : compact(model.packetBytes) + ' sparse bytes') + ' / ' + compact(model.denseBytes) + ' dense bytes · ' + safeNumber(model.zeroCount) + ' zero-power bins' : 'Powers and indices are separate from audio.', consumer: model && model.bandAvailable ? (model.bandPreview ? 'Consumer block preview' : 'Consumer block') + ' · ends at ' + seconds(model.bandTime) + ' · shared power scale' : 'A recorded 16-band consumer frame is not available at this time.' };
       fields.note.textContent = notes[stage.kind];
       fields.audioState.textContent = state.playing ? 'Playing ' + (state.audioMode === 'processed' ? 'output' : state.audioMode === 'difference' ? 'difference' : 'input') : model && model.audioAvailable ? 'Ready at ' + seconds(state.position) : 'Audio not loaded';
       mount.querySelectorAll('[data-sl-listen]').forEach(function (button) { var mode = button.dataset.slListen; button.disabled = !state.buffers[mode]; button.setAttribute('aria-pressed', String(state.playing && state.audioMode === mode)); });
@@ -137,8 +137,8 @@
       if (!kept.length) { empty(c, 'No retained entries in this frame.'); return; }
       for (var j = 0; j < limit; j++) {
         var index = kept[j], x = left + (j % columns) * (width + gap), y = top + Math.floor(j / columns) * (rowHeight + 5), amount = clamp(progress * 2 - j / Math.max(limit, 1), 0, 1);
-        ctx.globalAlpha = .12 + .88 * amount; ctx.fillStyle = '#ebced6'; ctx.strokeStyle = '#d5abb8'; ctx.lineWidth = 1; ctx.fillRect(x, y, width, rowHeight); ctx.strokeRect(x + .5, y + .5, width - 1, rowHeight - 1);
-        text(ctx, 'k' + String(index).padStart(3, '0'), x + 9, y + 15, COLORS.power, 10); text(ctx, compact(model.after[index]), x + 9, y + rowHeight - 8, '#68404d', 11);
+        ctx.globalAlpha = .12 + .88 * amount; ctx.fillStyle = '#dfd2fb'; ctx.strokeStyle = '#b9a6d9'; ctx.lineWidth = 1; ctx.fillRect(x, y, width, rowHeight); ctx.strokeRect(x + .5, y + .5, width - 1, rowHeight - 1);
+        text(ctx, 'k' + String(index).padStart(3, '0'), x + 9, y + 15, COLORS.power, 10); text(ctx, compact(model.after[index]), x + 9, y + rowHeight - 8, '#5a4380', 11);
       }
       ctx.globalAlpha = 1; text(ctx, kept.length + ' retained entries' + (kept.length > limit ? ' · first ' + limit + ' shown' : ''), left, c.h - 20, COLORS.text, 10); text(ctx, 'BIN INDEX / POWER', left, 13, COLORS.dim, 9);
     }
@@ -201,8 +201,8 @@
       ctx.imageSmoothingEnabled = false; ctx.drawImage(heatCache.before, left, top, width, row); ctx.drawImage(heatCache.after, left, top + row + 5, width, row);
       text(ctx, 'Before', 11, top + row / 2 + 3, COLORS.input, 10); text(ctx, 'After', 11, top + row * 1.5 + 8, COLORS.output, 10);
       var duration = Math.max(.001, safeNumber(state.result && state.result.duration)), x = left + clamp(state.position / duration, 0, 1) * width;
-      ctx.strokeStyle = '#66374c'; ctx.lineWidth = 1.3; ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x, top + row * 2 + 5); ctx.stroke();
-      ctx.fillStyle = '#66374c'; ctx.beginPath(); ctx.moveTo(x - 4, 2); ctx.lineTo(x + 4, 2); ctx.lineTo(x, 8); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = '#714480'; ctx.lineWidth = 1.3; ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x, top + row * 2 + 5); ctx.stroke();
+      ctx.fillStyle = '#714480'; ctx.beginPath(); ctx.moveTo(x - 4, 2); ctx.lineTo(x + 4, 2); ctx.lineTo(x, 8); ctx.closePath(); ctx.fill();
       text(ctx, '0 s', left, c.h - 3, COLORS.dim, 9); text(ctx, seconds(duration), left + width, c.h - 3, COLORS.dim, 9, 'right');
     }
     function draw(now) { raf = null; if (!canDraw()) return; if (progress < 1) { if (animationStart === null) animationStart = now; progress = reduced.matches ? 1 : Math.min(1, (now - animationStart) / 1850); } drawMain(); drawContext(); if (progress < 1) requestDraw(); }
