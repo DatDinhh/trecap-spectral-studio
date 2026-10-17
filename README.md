@@ -22,7 +22,13 @@ If the port is occupied, use `python run.py --port 8771`. Stop with Ctrl+C. Avoi
 
 ## What to try
 
-Open **Inside the signal path** and press **Play walkthrough** to follow the current TSH2 architecture. Moving packets trace the laptop upload, HPS RAM, the interleaved MMIO feed/drain loop, windowing and FFT, then the separate reconstructed-audio and sparse-spectrum branches. Click a block for its explanation. **Pause**, **Previous**, **Next**, and **Expand map** support a presentation at your own pace. Escape closes the expanded map.
+Start with the signal transformation lab. Select a moment in the audio, then move through input, frame and window, FFT, threshold, reconstructed audio, sparse packets, and the laptop consumer. The large plots show how that same part of the signal changes. Play the transformation tour for a paced explanation, or choose individual stages. Listen to the input, output, and difference at the shared playback position.
+
+The FFT and threshold plots use the actual captured powers. The window view multiplies the prepared input waveform by the design's periodic square-root Hann Q15 coefficients. It is a derived display, not a captured internal trace. The reconstructed waveform is the actual board output with its 384-sample delay already removed. Internal complex FFT and raw IFFT samples were not captured. The audio comes from the separate Y output, because sparse TSP1 powers do not contain phase.
+
+Transitions illustrate the operation at presentation speed. They do not measure internal hardware timing. The spectrogram overview uses a shared original-peak scale and the same audio cursor. The laptop consumer uses its recorded aggregation blocks, whose end time is shown separately from the selected FFT frame. A preview label identifies a first frame or block whose end lies after the playback cursor.
+
+Open **Open system architecture map** and press **Play walkthrough** to follow the current TSH2 architecture. Moving packets trace the laptop upload, HPS RAM, the interleaved MMIO feed/drain loop, windowing and FFT, then the separate reconstructed-audio and sparse-spectrum branches. Click a block for its explanation. **Pause**, **Previous**, **Next**, and **Expand map** support a presentation at your own pace. Escape closes the expanded map.
 
 The walkthrough has eight teaching steps based on the [current architecture atlas](https://github.com/DatDinhh/T_RECAP/tree/main/phase2/docs/architecture/tsh2). These steps explain the data path. The audio and spectral branches operate during the same run. TSP1 carries powers and indices without phase, while the IFFT/WOLA path produces audio.
 
@@ -36,6 +42,8 @@ The walkthrough has eight teaching steps based on the [current architecture atla
 5. Where available, replay the recorded processing timeline. Its timestamps and transfer counts come from a saved hardware session. The board's internal FFT, threshold, and IFFT illustration does not report separate measured stage timings.
 
 Run `node --test test_architecture_flow.cjs` for the animation lifecycle and observation-state checks. `python verify_demo.py` checks the offline assets and unchanged recorded evidence.
+
+Run `node --test test_signal_data.cjs` to check frame alignment, zero padding, Q15 window coefficients, browser audio sample-rate handling, and every bundled frame's threshold mask and sparse packet size. The data check covers 77,996 frames across 41 result files. Dense powers use 952 bytes per frame, while sparse packets use `48 + 8K` bytes for `K` retained bins. Retained zero values still occupy entries, and a full sparse frame is larger than dense.
 
 ## Interactive 3D spectrogram
 

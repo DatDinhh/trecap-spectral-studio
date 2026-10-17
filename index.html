@@ -5,8 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0b111b">
   <title>T-RECAP · Recorded FPGA demo</title>
-  <link rel="stylesheet" href="styles.css">
-  <link rel="stylesheet" href="architecture-flow.css">
+  <link rel="stylesheet" href="styles.css?v=signal-lab-20261017.2">
+  <link rel="stylesheet" href="architecture-flow.css?v=signal-lab-20261017.2">
+  <link rel="stylesheet" href="signal-lab.css?v=signal-lab-20261017.2">
 </head>
 <body>
   <a class="skip-link" href="#workspace">Skip to results</a>
@@ -47,7 +48,8 @@
     <div class="workspace" id="workspace" tabindex="-1">
       <section class="intro" aria-labelledby="workspace-title"><div><p class="eyebrow">FPGA AUDIO PROCESSING · RECORDED DEMO</p><h1 id="workspace-title">Hear it. See what changes.</h1><p class="intro-copy">Compare the original sound with recorded FPGA output, then inspect the spectral monitor.</p></div><span class="workspace-badge"><span aria-hidden="true">⌁</span> SIGNAL ANALYSIS</span></section>
       <div class="portable-notice"><span class="recorded-badge">RECORDED FPGA DEMO</span><p>Real outputs from a DE1-SoC board. Hardware execution is available only in the original local app. Laptop benchmarks were recorded on the original laptop.</p><a href="demo/ATTRIBUTION.md">Sources & attribution ↗</a></div>
-      <section id="architecture-atlas" aria-label="Animated system architecture"></section>
+      <section id="signal-lab" aria-label="Signal transformation laboratory"></section>
+      <details class="signal-architecture-details"><summary>Open system architecture map <span>Follow data through the laptop, HPS and FPGA</span></summary><section id="architecture-atlas" aria-label="Animated system architecture"></section></details>
       <section id="processing-flow" class="processing-flow panel" aria-labelledby="flow-title" data-status="idle">
         <div class="flow-heading">
           <div><p class="eyebrow">THE RECORDED HARDWARE JOURNEY</p><h2 id="flow-title">Run observations</h2></div>
@@ -146,10 +148,12 @@
       <footer><strong>T-RECAP</strong><span>Adjustable spectral filtering · DE1-SoC · Laptop consumer</span><span>Recorded captures. Synchronized playback.</span></footer>
     </div>
   </main>
-  <script src="architecture-flow.js" defer></script>
-  <script src="pipeline.js" defer></script>
-  <script src="spectrogram3d.js" defer></script>
-  <script src="spectrogram-panel.js" defer></script>
-  <script src="app.js" defer></script>
+  <script src="architecture-flow.js?v=signal-lab-20261017.2" defer></script>
+  <script src="pipeline.js?v=signal-lab-20261017.2" defer></script>
+  <script src="spectrogram3d.js?v=signal-lab-20261017.2" defer></script>
+  <script src="spectrogram-panel.js?v=signal-lab-20261017.2" defer></script>
+  <script src="signal-data.js?v=signal-lab-20261017.2" defer></script>
+  <script src="signal-lab.js?v=signal-lab-20261017.2" defer></script>
+  <script src="app.js?v=signal-lab-20261017.2" defer></script>
 </body>
 </html>
