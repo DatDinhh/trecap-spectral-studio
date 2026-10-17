@@ -9,7 +9,7 @@ import sys
 import wave
 
 ROOT = Path(__file__).resolve().parent
-DASHBOARD_SCRIPTS = ('pipeline.js', 'spectrogram3d.js', 'spectrogram-panel.js', 'app.js')
+DASHBOARD_SCRIPTS = ('architecture-flow.js', 'pipeline.js', 'spectrogram3d.js', 'spectrogram-panel.js', 'app.js')
 
 
 class DashboardLinks(HTMLParser):
@@ -32,13 +32,13 @@ def validate_dashboard():
     page.feed(asset('index.html').read_text(encoding='utf-8'))
     sources = [script.get('src') for script in page.scripts]
     assert sources == list(DASHBOARD_SCRIPTS), 'Dashboard scripts are missing, duplicated or out of dependency order'
-    assert page.stylesheets == ['styles.css'], 'Dashboard stylesheet must be the local styles.css'
+    assert page.stylesheets == ['styles.css', 'architecture-flow.css'], 'Dashboard stylesheets must be local and ordered'
     for script in page.scripts:
         assert 'defer' in script and 'async' not in script, 'Dashboard scripts must preserve deferred dependency order'
         asset(script['src'])
     for stylesheet in page.stylesheets:
         asset(stylesheet)
-    for name in ('index.html', *DASHBOARD_SCRIPTS, 'styles.css'):
+    for name in ('index.html', *DASHBOARD_SCRIPTS, 'styles.css', 'architecture-flow.css'):
         source = asset(name).read_text(encoding='utf-8')
         assert '\u2013' not in source and '\u2014' not in source, f'Forbidden dash character: {name}'
 

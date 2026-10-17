@@ -33,11 +33,16 @@
   constructor(doc){this.doc=doc;this.frame=null;this.resolveReplay=null;this.active=false;this.historySignature=null;}
   el(id){return this.doc.getElementById(id);}
   text(id,value){const element=this.el(id);if(element)element.textContent=clean(value);}
+  architecture(values){
+   const EventClass=this.doc.defaultView?.CustomEvent;
+   if(EventClass&&this.doc.dispatchEvent)this.doc.dispatchEvent(new EventClass("trecap:architecture",{detail:{mode:"recorded",...values}}));
+  }
   running(){return this.active;}
   stop(){
    const wasActive=this.active;
    if(this.frame!==null)cancelAnimationFrame(this.frame);
    this.frame=null;this.active=false;
+   if(wasActive)this.architecture({phase:"stopped",status:"idle"});
    if(wasActive){for(const node of this.doc.querySelectorAll("[data-flow-stage], [data-flow-part]")){if(node.dataset.state==="active")node.dataset.state="waiting";node.removeAttribute("aria-current");}const panel=this.el("processing-flow");if(panel){panel.dataset.status="complete";panel.dataset.replay="false";panel.setAttribute("aria-busy","false");}this.text("flow-replay-badge","RECORDED REPLAY STOPPED");this.text("flow-status","Recorded replay stopped");this.text("flow-detail","Replay stopped. No hardware is running.");}
    if(this.resolveReplay){const resolve=this.resolveReplay;this.resolveReplay=null;resolve(false);}
   }
@@ -59,6 +64,7 @@
    this.text("flow-source",options.source||result.sourceId);this.text("flow-threshold",`Threshold ${thresholdLabel(result.threshold)}`);this.text("flow-pass","Saved physical capture");this.text("flow-queue","No hardware execution");
    this.text("flow-transfer","Transfer timing and sizes are shown only during a replay of saved event data.");
    this.text("flow-observation","Recorded capture. No hardware runs occur here. Internal FFT, threshold and IFFT stages were not separately timed.");
+   this.architecture({phase:"complete",status:"complete",source:options.source||result.sourceId,threshold:result.threshold});
    this.history([],options.hasReplay?"A recorded event history is available. Press Replay recorded run to inspect it.":"No event history was saved for this capture.");
   }
   render(history,events,elapsed,source,complete=false){
@@ -76,6 +82,7 @@
    const transfer=[...events].reverse().find(e=>(e.pass_kind||"selected")===model.pass&&["sending","receiving"].includes(e.phase)&&Number.isFinite(e.total_bytes));
    this.text("flow-transfer",transfer?`Recorded ${transfer.phase==="sending"?"input accepted by socket":"output received"}: ${(Number(transfer.completed_bytes)/1e6).toFixed(2)} / ${(transfer.total_bytes/1e6).toFixed(2)} MB.`:"No transfer observation reached yet.");
    this.history(events,"No recorded event reached yet.");
+   this.architecture({phase:model.phase,status:complete?"complete":"active",source:source||history.source_id,threshold:model.progress.threshold??history.threshold,pass:model.pass,elapsedMs:elapsed,states:model.states});
   }
   history(events,emptyText){
    const target=this.el("flow-events");if(!target)return;

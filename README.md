@@ -22,11 +22,20 @@ If the port is occupied, use `python run.py --port 8771`. Stop with Ctrl+C. Avoi
 
 ## What to try
 
+Open **Inside the signal path** and press **Play walkthrough** to follow the current TSH2 architecture. Moving packets trace the laptop upload, HPS RAM, the interleaved MMIO feed/drain loop, windowing and FFT, then the separate reconstructed-audio and sparse-spectrum branches. Click a block for its explanation. **Pause**, **Previous**, **Next**, and **Expand map** support a presentation at your own pace. Escape closes the expanded map.
+
+The walkthrough has eight teaching steps based on the [current architecture atlas](https://github.com/DatDinhh/T_RECAP/tree/main/phase2/docs/architecture/tsh2). These steps explain the data path. The audio and spectral branches operate during the same run. TSP1 carries powers and indices without phase, while the IFFT/WOLA path produces audio.
+
+**Replay recorded run** drives the map from the saved outer job events. Internal motion is illustrative because FFT, IFFT, frame and FIFO activity were not individually timed. A completed, failed or disconnected job stops the motion. The separate walkthrough runs locally and does not request hardware access or create new capture results. Reduced-motion settings disable moving packets while preserving the controls and step explanations.
+
 1. Select one of the four machine recordings or eight synthetic controls.
 2. Select one of that recording's available thresholds and load the capture.
 3. Listen before FPGA, listen after FPGA, or hear their difference. All three use the same playback gain.
 4. Open **Signal comparison** and explore the paired **3D surface** spectrograms. Drag either surface to rotate both, scroll to zoom, or select **Top view**. The bright cursor follows audio playback. **2D map** preserves the original spectrogram view.
+
 5. Where available, replay the recorded processing timeline. Its timestamps and transfer counts come from a saved hardware session. The board's internal FFT, threshold, and IFFT illustration does not report separate measured stage timings.
+
+Run `node --test test_architecture_flow.cjs` for the animation lifecycle and observation-state checks. `python verify_demo.py` checks the offline assets and unchanged recorded evidence.
 
 ## Interactive 3D spectrogram
 
