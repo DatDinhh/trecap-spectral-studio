@@ -22,7 +22,11 @@ If the port is occupied, use `python run.py --port 8771`. Stop with Ctrl+C. Avoi
 
 ## What to try
 
-Open **From RTL to moving signals** to follow the design from SystemVerilog through synthesis, placement and routing, bitstream generation and FPGA configuration. The chip view is an interactive schematic. Select a module to inspect its RTL excerpt, hardware operators, worked values and individual processing steps. Use the step controls for a presentation or play the sequence automatically. Zoom and expand the view for a closer look.
+Start with **How the FPGA changes a signal**. The default **Guided walkthrough** follows one small learning example through eight stages. Each stage shows its input, the operation and its output. Press **Show what changes** to reveal the result, then move to the next stage. Short explanations describe the purpose of each step and define technical terms where they appear. **Play walkthrough** advances the explanation automatically, without running hardware.
+
+The guide uses a computed eight-sample example, with a matching window, spectrum, threshold and reconstructed signal. Its threshold is in the example's own units. It is independent of the audio capture and threshold chosen in the sidebar. The actual design processes 256-sample frames. The two output branches stay separate: complex coefficients produce audio through IFFT and overlap-add, while retained powers and indices form spectral packets for the laptop consumer.
+
+Choose **Explore RTL & modules**, or **Inspect this step in RTL**, when you want implementation detail. The chip view is an interactive schematic. Select a module to inspect its RTL excerpt, hardware operators, worked values and individual processing steps. Use the step controls for a presentation or play the sequence automatically. Zoom and expand the view for a closer look. Returning to the guided view preserves your place.
 
 The **Go deeper** panel walks through a four-bit addition, carry propagation and a clocked register. It connects the arithmetic in an RTL expression to conceptual logic building blocks. The explorer contains eight module lessons and five build stages, with 78 individual teaching steps. It preserves the current dark theme and runs entirely in the browser.
 
@@ -30,7 +34,7 @@ The explorer covers the input FIFO, Q15 window, FFT butterfly, squared-magnitude
 
 Synthesis and routing views illustrate how RTL describes configured hardware. They are not the actual device floorplan, a gate-level simulation or measured cycle activity. Moving through those views does not compile RTL, program a board or generate new measurements. The separate hardware-connected application retains its existing run controls.
 
-Start with the signal transformation lab. Select a moment in the audio, then move through input, frame and window, FFT, threshold, reconstructed audio, sparse packets, and the laptop consumer. The large plots show how that same part of the signal changes. Play the transformation tour for a paced explanation, or choose individual stages. Listen to the input, output, and difference at the shared playback position.
+Continue to the signal transformation lab to explore real captures. Select a moment in the audio, then move through input, frame and window, FFT, threshold, reconstructed audio, sparse packets, and the laptop consumer. The large plots show how that same part of the signal changes. Play the transformation tour for a paced explanation, or choose individual stages. Listen to the input, output, and difference at the shared playback position.
 
 The FFT and threshold plots use the actual captured powers. The window view multiplies the prepared input waveform by the design's periodic square-root Hann Q15 coefficients. It is a derived display, not a captured internal trace. The reconstructed waveform is the actual board output with its 384-sample delay already removed. Internal complex FFT and raw IFFT samples were not captured. The audio comes from the separate Y output, because sparse TSP1 powers do not contain phase.
 
@@ -95,6 +99,7 @@ Stage replay is available for 12 captures with an actual saved event history. Ot
 - `index.html`, `app.js`, `pipeline.js`, `styles.css`: static dashboard.
 - `hardware-model.js`: source-linked build stages, module operations and fixed-point worked examples.
 - `hardware-context.js`: selected-capture adapter with explicit data provenance.
+- `hardware-guide.js`: beginner walkthrough with one consistent computed signal example and before/after scenes.
 - `hardware-explorer.js`, `hardware-explorer.css`: interactive hardware schematic, module detail, RTL highlighting and step playback.
 - `test_hardware_model.cjs`, `test_hardware_context.cjs`, `test_hardware_explorer.cjs`: numerical examples, carry propagation, threshold behavior, packet semantics and capture alignment checks.
 - `spectrogram3d.js`, `spectrogram-panel.js`: offline WebGL renderer and paired-view controls.
@@ -109,7 +114,7 @@ Stage replay is available for 12 captures with an actual saved event history. Ot
 
 Run `python verify_demo.py` to validate the portable bundle. It checks exported files; it does not rerun hardware or recreate benchmark timings.
 
-Run `node --test test_hardware_model.cjs test_hardware_context.cjs test_hardware_explorer.cjs` to check the explorer's worked arithmetic, carry logic and capture-context handling. Source review checks its descriptions against the published RTL. These checks validate the teaching view, not a new FPGA implementation.
+Run `node --test test_hardware_model.cjs test_hardware_context.cjs test_hardware_explorer.cjs test_hardware_guide.cjs` to check the explorer's worked arithmetic, carry logic, capture-context handling and the guide's signal transformations. Source review checks its descriptions against the published RTL. These checks validate the teaching view, not a new FPGA implementation.
 
 Run `node --test test_spectrogram3d.cjs test_spectrogram3d_view.cjs` with Node.js 18 or later for the 19 dependency-free renderer tests. The bundle verifier also checks local dashboard dependencies and script order. Interactive camera, playback, layout, and browser rendering require browser checks in addition to those tests.
 

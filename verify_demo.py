@@ -9,7 +9,7 @@ import sys
 import wave
 
 ROOT = Path(__file__).resolve().parent
-DASHBOARD_SCRIPTS = ('architecture-flow.js', 'pipeline.js', 'spectrogram3d.js', 'spectrogram-panel.js', 'signal-data.js', 'signal-lab.js', 'hardware-model.js', 'hardware-context.js', 'hardware-explorer.js', 'app.js')
+DASHBOARD_SCRIPTS = ('architecture-flow.js', 'pipeline.js', 'spectrogram3d.js', 'spectrogram-panel.js', 'signal-data.js', 'signal-lab.js', 'hardware-model.js', 'hardware-context.js', 'hardware-guide.js', 'hardware-explorer.js', 'app.js')
 
 
 class DashboardLinks(HTMLParser):

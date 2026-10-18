@@ -183,13 +183,23 @@
     this.onClick = this.click.bind(this); this.onKey = this.keydown.bind(this); this.onVisibility = this.visibility.bind(this);
     element.classList.add('hardware-explorer'); element.setAttribute('data-hx-motion', this.motion.matches ? 'reduced' : 'full');
     element.addEventListener('click', this.onClick); element.addEventListener('keydown', this.onKey); this.doc.addEventListener('visibilitychange', this.onVisibility);
-    this.renderShell(); this.refresh(true);
+    this.guideIndex = 0; this.guideRevealed = false; this.guidePlaying = false; this.guideTimer = null; this.mode = 'guide';
+    this.renderShell(); this.refresh(true); this.renderGuide();
   }
   View.prototype.modelAPI = function () { return root.TreCapHardwareModel; };
   View.prototype.getModel = function () { var api = this.modelAPI(); return api && typeof api.getModule === 'function' ? api.getModule(this.lesson, this.context) : null; };
   View.prototype.renderShell = function () {
     var uid = this.uid;
-    this.element.innerHTML = '<div class="hx-heading"><div><p class="hx-eyebrow">INSIDE THE ACCELERATOR</p><h2>From RTL to moving signals</h2><p class="hx-intro">Explore the logic, inspect an operation, then follow the bits.</p></div><button type="button" data-hx-action="expand" class="hx-expand" aria-label="Expand hardware explorer">Expand explorer <span aria-hidden="true">↗</span></button></div>' +
+    this.element.innerHTML = '<div class="hx-heading"><div><p class="hx-eyebrow">UNDERSTAND THE SYSTEM</p><h2>How the FPGA changes a signal</h2><p class="hx-intro">Follow one small example. See what goes in, what changes and what comes out.</p></div><button type="button" data-hx-action="expand" class="hx-expand" aria-label="Expand hardware explorer">Expand explorer <span aria-hidden="true">↗</span></button></div>' +
+      '<div class="hx-modebar" role="group" aria-label="Explanation depth"><button type="button" data-hx-action="guide-mode" aria-pressed="true">Guided walkthrough <span>Start here</span></button><button type="button" data-hx-action="advanced-mode" aria-pressed="false">Explore RTL &amp; modules <span>Hardware details</span></button></div>' +
+      '<section class="hx-guide" aria-label="Guided signal walkthrough"><div class="hxg-intro"><span class="hxg-badge">LEARNING EXAMPLE</span><p>Eight samples keep the changes easy to see. The board uses 256 samples per frame. This example is independent of the recording selected in the sidebar.</p></div>' +
+      '<nav class="hxg-stops" aria-label="Walkthrough stages"></nav><div class="hxg-lesson"><div class="hxg-title-row"><div><p class="hxg-location"></p><h3 class="hxg-title"></h3></div><span class="hxg-count"></span></div><p class="hxg-action"></p>' +
+      '<div class="hxg-controls"><button type="button" data-hx-action="guide-back" aria-label="Previous walkthrough stage">← Back</button><button type="button" data-hx-action="guide-reveal" class="hxg-primary">Show what changes</button><button type="button" data-hx-action="guide-next" class="hxg-next">Next stage →</button></div>' +
+      '<div class="hxg-scene-host"></div><div class="hxg-watch" role="status" aria-live="polite"></div>' +
+      '<div class="hxg-learning"><div><span>WHY THIS STEP?</span><p class="hxg-why"></p></div><div><span class="hxg-term-name"></span><p class="hxg-term-meaning"></p></div></div>' +
+      '<div class="hxg-foot"><button type="button" data-hx-action="guide-detail">Inspect this step in RTL ↗</button><button type="button" data-hx-action="guide-play">Play walkthrough</button><button type="button" data-hx-action="guide-reset">Start over</button></div></div>' +
+      '<div class="hxg-real"><div><strong>Ready to compare real audio?</strong><span>The plots and listening controls below use recorded FPGA outputs.</span></div><a href="#signal-lab">Explore the real capture ↓</a></div></section>' +
+      '<div class="hx-advanced" hidden>' +
       '<div class="hx-notice"><span class="hx-illustrated"><i></i>Illustrated hardware steps</span><span class="hx-context-label">Source-guided operations · no internal timing telemetry</span></div>' +
       '<nav class="hx-build-tabs" aria-label="Hardware build journey">' + BUILDS.map(function (id, i) { return '<button type="button" data-hx-build="' + id + '" aria-pressed="' + (i === 0) + '"><span>' + String(i + 1).padStart(2, '0') + '</span>' + BUILD_LABELS[i] + '</button>'; }).join('') + '</nav>' +
       '<div class="hx-journey"><div><span class="hx-build-kicker">BUILD JOURNEY</span><h3 class="hx-journey-title"></h3><p class="hx-journey-copy"></p></div><button type="button" data-hx-action="inspect" class="hx-inspect">Explore this stage <span aria-hidden="true">→</span></button></div>' +
@@ -202,10 +212,51 @@
       '<section class="hx-operation-panel" aria-labelledby="' + uid + '-step-title"><div class="hx-panel-head"><span class="hx-evidence-label"></span><span class="hx-operation-label"></span></div><div class="hx-diagram"></div><div class="hx-step-story"><h4 id="' + uid + '-step-title"></h4><p></p></div><dl class="hx-values"></dl></section></div>' +
       '<details class="hx-bits"><summary>Go deeper: a carry chain and clocked register <span>Worked binary example</span></summary><div class="hx-bits-body"><div class="hx-bits-intro"><div><h4>How 7 + 5 becomes 12</h4><p>Each full adder combines two bits and a carry. A register stores the result at a clock edge.</p></div><button type="button" data-hx-action="bit">Advance one bit</button></div><div class="hx-bit-diagram"></div><p class="hx-bit-caption" aria-live="polite"></p><p class="hx-bits-note">Conceptual logic building blocks · this does not show the FPGA transistor layout or a measured gate trace</p></div></details>' +
       '<details class="hx-notes"><summary>Source context and interpretation</summary><ul></ul></details></div>' +
-      '<div class="hx-footer">Choose a build stage or select a chip block to begin.</div>';
+      '<div class="hx-footer">Choose a build stage or select a chip block to begin.</div></div>';
     this.refs = {}; var names = ['journey-title','journey-copy','module-tabs','lesson-kicker','lesson-title','module-summary','resources','step-count','code','source-file','source-link','diagram','evidence-label','operation-label','values','context-label','bit-diagram','bit-caption'];
     for (var i = 0; i < names.length; i++) this.refs[names[i]] = this.element.querySelector('.hx-' + names[i]);
     this.renderBits(); this.setZoom(1); this.element.querySelector('[data-hx-action="expand"]').setAttribute('aria-expanded', 'false');
+  };
+  View.prototype.renderGuide = function () {
+    var guide = root.TreCapHardwareGuide; if (!guide || !guide.lessons.length) return;
+    var self = this, lesson = guide.lessons[this.guideIndex], host = this.element.querySelector('.hx-guide');
+    var stops = host.querySelector('.hxg-stops');
+    if (!stops.children.length) stops.innerHTML = guide.lessons.map(function (item, i) { return '<button type="button" data-hx-guide="' + i + '" aria-label="Stage ' + (i + 1) + ': ' + esc(item.shortLabel) + '"><span>' + (i + 1) + '</span>' + esc(item.shortLabel) + '</button>'; }).join('');
+    stops.querySelectorAll('button').forEach(function (button, i) { button.setAttribute('aria-current', i === self.guideIndex ? 'step' : 'false'); button.classList.toggle('is-past', i < self.guideIndex); });
+    host.querySelector('.hxg-location').textContent = lesson.where;
+    host.querySelector('.hxg-title').textContent = lesson.title;
+    host.querySelector('.hxg-count').textContent = (this.guideIndex + 1) + ' / ' + guide.lessons.length;
+    host.querySelector('.hxg-action').textContent = lesson.action;
+    host.querySelector('.hxg-scene-host').innerHTML = guide.renderScene(this.guideIndex, this.guideRevealed);
+    host.querySelector('.hxg-watch').textContent = this.guideRevealed ? lesson.watch : 'Look at the input, then press Show what changes.';
+    host.querySelector('.hxg-watch').classList.toggle('is-revealed', this.guideRevealed);
+    host.querySelector('.hxg-why').textContent = lesson.why;
+    host.querySelector('.hxg-term-name').textContent = lesson.term ? lesson.term.name : 'OUTPUT';
+    host.querySelector('.hxg-term-meaning').textContent = lesson.term ? lesson.term.meaning : lesson.output;
+    host.querySelector('[data-hx-action="guide-back"]').disabled = this.guideIndex === 0;
+    host.querySelector('[data-hx-action="guide-reveal"]').textContent = this.guideRevealed ? 'Replay this change' : 'Show what changes';
+    host.querySelector('[data-hx-action="guide-next"]').textContent = this.guideIndex === guide.lessons.length - 1 ? 'Back to the beginning ↺' : 'Next: ' + guide.lessons[this.guideIndex + 1].shortLabel + ' →';
+    host.querySelector('[data-hx-action="guide-play"]').textContent = this.guidePlaying ? 'Pause walkthrough' : 'Play walkthrough';
+    host.setAttribute('data-playing', this.guidePlaying ? 'true' : 'false');
+  };
+  View.prototype.pauseGuide = function () { this.guidePlaying = false; if (this.guideTimer != null) root.clearTimeout(this.guideTimer); this.guideTimer = null; var b = this.element.querySelector('[data-hx-action="guide-play"]'); if (b) b.textContent = 'Play walkthrough'; };
+  View.prototype.scheduleGuide = function () {
+    var self = this; if (!this.guidePlaying || this.destroyed || this.doc.hidden) return;
+    this.guideTimer = root.setTimeout(function () {
+      self.guideTimer = null; if (!self.guidePlaying || self.destroyed) return;
+      if (!self.guideRevealed) self.guideRevealed = true;
+      else if (self.guideIndex < root.TreCapHardwareGuide.lessons.length - 1) { self.guideIndex++; self.guideRevealed = false; }
+      else { self.pauseGuide(); return; }
+      self.renderGuide(); self.scheduleGuide();
+    }, this.guideRevealed ? 6500 : 2800);
+  };
+  View.prototype.setMode = function (mode) {
+    this.pause(); this.pauseGuide(); this.mode = mode;
+    this.element.querySelector('.hx-guide').hidden = mode !== 'guide';
+    this.element.querySelector('.hx-advanced').hidden = mode !== 'advanced';
+    this.element.querySelector('[data-hx-action="guide-mode"]').setAttribute('aria-pressed', mode === 'guide');
+    this.element.querySelector('[data-hx-action="advanced-mode"]').setAttribute('aria-pressed', mode === 'advanced');
+    if (mode === 'advanced') this.setZoom(1, true);
   };
   View.prototype.refresh = function (structural) {
     if (this.destroyed) return;
@@ -283,21 +334,21 @@
     this.timer = root.setTimeout(function () { self.timer = null; if (!self.playing || self.destroyed) return; if (self.stepIndex >= self.model.steps.length - 1) { self.pause(); return; } self.stepIndex++; self.renderStep(); if (self.stepIndex === self.model.steps.length - 1) self.pause(); else self.schedule(); }, 3700);
   };
   View.prototype.play = function () { if (!this.model) return; if (this.playing) { this.pause(); return; } if (this.stepIndex === this.model.steps.length - 1) this.stepIndex = 0; this.playing = true; this.renderStep(); this.schedule(); };
-  View.prototype.visibility = function () { if (this.doc.hidden) this.pause(); };
+  View.prototype.visibility = function () { if (this.doc.hidden) { this.pause(); this.pauseGuide(); } };
   View.prototype.setZoom = function (zoom, fit) { var viewport = this.element.querySelector('.hx-map-scroll').clientWidth || 1000; this.mapBase = Math.max(1000, viewport); this.zoom = Math.min(3, Math.max(.1, fit ? viewport / this.mapBase : zoom)); var inner = this.element.querySelector('.hx-map-inner'); inner.style.minWidth = '0'; inner.style.width = (this.mapBase * this.zoom) + 'px'; this.element.querySelector('.hx-zoom-value').textContent = Math.round(this.zoom * 100) + '%'; };
   View.prototype.toggleExpand = function () {
     var self = this;
     if (this.expanded) { this.closeExpanded(); return; }
     this.focusBeforeExpand = this.doc.activeElement; this.placeholder = this.doc.createComment('hardware explorer'); this.element.parentNode.insertBefore(this.placeholder, this.element);
     var dialog = this.doc.createElement('dialog'); dialog.className = 'hx-dialog'; dialog.setAttribute('aria-label', 'Expanded hardware explorer'); dialog.appendChild(this.element); this.doc.body.appendChild(dialog); this.dialog = dialog; this.expanded = true;
-    this.element.classList.add('hx-expanded'); var expandButton = this.element.querySelector('[data-hx-action="expand"]'); expandButton.textContent = 'Close explorer ×'; expandButton.setAttribute('aria-label', 'Close hardware explorer'); expandButton.setAttribute('aria-expanded', 'true'); this.openDetail();
+    this.element.classList.add('hx-expanded'); var expandButton = this.element.querySelector('[data-hx-action="expand"]'); expandButton.textContent = 'Close explorer ×'; expandButton.setAttribute('aria-label', 'Close hardware explorer'); expandButton.setAttribute('aria-expanded', 'true'); if (this.mode === 'advanced') this.openDetail();
     this.cancelDialog = function (event) { event.preventDefault(); self.closeExpanded(); }; dialog.addEventListener('cancel', this.cancelDialog);
     if (dialog.showModal) dialog.showModal(); else { dialog.setAttribute('open', ''); dialog.setAttribute('role', 'dialog'); dialog.setAttribute('aria-modal', 'true'); }
     this.setZoom(this.zoom);
     this.element.querySelector('[data-hx-action="expand"]').focus();
   };
   View.prototype.closeExpanded = function () {
-    if (!this.expanded) return; this.pause(); this.expanded = false;
+    if (!this.expanded) return; this.pause(); this.pauseGuide(); this.expanded = false;
     if (this.placeholder && this.placeholder.parentNode) { this.placeholder.parentNode.insertBefore(this.element, this.placeholder); this.placeholder.remove(); }
     this.element.classList.remove('hx-expanded'); var expandButton = this.element.querySelector('[data-hx-action="expand"]'); expandButton.innerHTML = 'Expand explorer <span aria-hidden="true">↗</span>'; expandButton.setAttribute('aria-label', 'Expand hardware explorer'); expandButton.setAttribute('aria-expanded', 'false');
     if (this.dialog) { this.dialog.removeEventListener('cancel', this.cancelDialog); if (this.dialog.close) this.dialog.close(); this.dialog.remove(); this.dialog = null; }
@@ -314,10 +365,19 @@
     var button = this.element.querySelector('[data-hx-action="bit"]'); button.textContent = active >= 4 ? 'Reset bit example' : active === 3 ? 'Apply clock edge' : 'Advance one bit';
   };
   View.prototype.click = function (event) {
-    var target = event.target.closest('[data-hx-action],[data-hx-module],[data-hx-select],[data-hx-build]'); if (!target || !this.element.contains(target)) return;
+    var target = event.target.closest('[data-hx-action],[data-hx-module],[data-hx-select],[data-hx-build],[data-hx-guide]'); if (!target || !this.element.contains(target)) return;
+    if (target.hasAttribute('data-hx-guide')) { this.pauseGuide(); this.guideIndex = Number(target.getAttribute('data-hx-guide')); this.guideRevealed = false; this.renderGuide(); return; }
     var module = target.getAttribute('data-hx-module') || target.getAttribute('data-hx-select'); if (module) { this.select(module, target.hasAttribute('data-hx-module')); return; }
     var build = target.getAttribute('data-hx-build'); if (build) { this.pause(); this.build = build; this.lesson = build; this.stepIndex = 0; this.refresh(true); return; }
     switch (target.getAttribute('data-hx-action')) {
+      case 'guide-mode': this.setMode('guide'); break;
+      case 'advanced-mode': this.setMode('advanced'); break;
+      case 'guide-detail': this.setMode('advanced'); this.select(root.TreCapHardwareGuide.lessons[this.guideIndex].moduleId, true); break;
+      case 'guide-back': this.pauseGuide(); this.guideIndex = Math.max(0, this.guideIndex - 1); this.guideRevealed = false; this.renderGuide(); break;
+      case 'guide-next': this.pauseGuide(); this.guideIndex = (this.guideIndex + 1) % root.TreCapHardwareGuide.lessons.length; this.guideRevealed = false; this.renderGuide(); break;
+      case 'guide-reveal': this.pauseGuide(); this.guideRevealed = true; this.renderGuide(); this.element.querySelector('.hxg-scene-host').scrollIntoView({ behavior: this.motion.matches ? 'instant' : 'smooth', block: 'nearest' }); break;
+      case 'guide-reset': this.pauseGuide(); this.guideIndex = 0; this.guideRevealed = false; this.renderGuide(); break;
+      case 'guide-play': if (this.guidePlaying) this.pauseGuide(); else { if (this.guideIndex === root.TreCapHardwareGuide.lessons.length - 1 && this.guideRevealed) { this.guideIndex = 0; this.guideRevealed = false; } this.guidePlaying = true; this.renderGuide(); this.scheduleGuide(); } break;
       case 'inspect': this.select(this.build, true); break;
       case 'play': this.play(); break;
       case 'previous': this.pause(); this.stepIndex = Math.max(0, this.stepIndex - 1); this.renderStep(); break;
@@ -344,6 +404,6 @@
       var first = focusable[0], last = focusable[focusable.length - 1]; if (event.shiftKey && this.doc.activeElement === first) { event.preventDefault(); last.focus(); } else if (!event.shiftKey && this.doc.activeElement === last) { event.preventDefault(); first.focus(); }
     }
   };
-  View.prototype.destroy = function () { if (this.destroyed) return; this.pause(); this.closeExpanded(); this.destroyed = true; this.element.removeEventListener('click', this.onClick); this.element.removeEventListener('keydown', this.onKey); this.doc.removeEventListener('visibilitychange', this.onVisibility); this.element.innerHTML = ''; this.element.classList.remove('hardware-explorer'); };
+  View.prototype.destroy = function () { if (this.destroyed) return; this.pause(); this.pauseGuide(); this.closeExpanded(); this.destroyed = true; this.element.removeEventListener('click', this.onClick); this.element.removeEventListener('keydown', this.onKey); this.doc.removeEventListener('visibilitychange', this.onVisibility); this.element.innerHTML = ''; this.element.classList.remove('hardware-explorer'); };
   return { View: View, contextKey: key, sumBits: sumBits, escapeHTML: esc };
 });
