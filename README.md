@@ -22,6 +22,14 @@ If the port is occupied, use `python run.py --port 8771`. Stop with Ctrl+C. Avoi
 
 ## What to try
 
+Open **From RTL to moving signals** to follow the design from SystemVerilog through synthesis, placement and routing, bitstream generation and FPGA configuration. The chip view is an interactive schematic. Select a module to inspect its RTL excerpt, hardware operators, worked values and individual processing steps. Use the step controls for a presentation or play the sequence automatically. Zoom and expand the view for a closer look.
+
+The **Go deeper** panel walks through a four-bit addition, carry propagation and a clocked register. It connects the arithmetic in an RTL expression to conceptual logic building blocks. The explorer contains eight module lessons and five build stages, with 78 individual teaching steps. It preserves the current dark theme and runs entirely in the browser.
+
+The explorer covers the input FIFO, Q15 window, FFT butterfly, squared-magnitude threshold, IFFT, weighted overlap-add, spectral packet encoder and laptop consumer. Reconstructed audio and spectral packets have separate output paths. Source links point to the project implementation. The selected capture supplies the before/after powers and packet information, while arithmetic examples explain internal operations that were not recorded. Browser-decoded waveforms are display samples, not raw fixed-point register traces.
+
+Synthesis and routing views illustrate how RTL describes configured hardware. They are not the actual device floorplan, a gate-level simulation or measured cycle activity. Moving through those views does not compile RTL, program a board or generate new measurements. The separate hardware-connected application retains its existing run controls.
+
 Start with the signal transformation lab. Select a moment in the audio, then move through input, frame and window, FFT, threshold, reconstructed audio, sparse packets, and the laptop consumer. The large plots show how that same part of the signal changes. Play the transformation tour for a paced explanation, or choose individual stages. Listen to the input, output, and difference at the shared playback position.
 
 The FFT and threshold plots use the actual captured powers. The window view multiplies the prepared input waveform by the design's periodic square-root Hann Q15 coefficients. It is a derived display, not a captured internal trace. The reconstructed waveform is the actual board output with its 384-sample delay already removed. Internal complex FFT and raw IFFT samples were not captured. The audio comes from the separate Y output, because sparse TSP1 powers do not contain phase.
@@ -85,6 +93,10 @@ Stage replay is available for 12 captures with an actual saved event history. Ot
 ## Files and validation
 
 - `index.html`, `app.js`, `pipeline.js`, `styles.css`: static dashboard.
+- `hardware-model.js`: source-linked build stages, module operations and fixed-point worked examples.
+- `hardware-context.js`: selected-capture adapter with explicit data provenance.
+- `hardware-explorer.js`, `hardware-explorer.css`: interactive hardware schematic, module detail, RTL highlighting and step playback.
+- `test_hardware_model.cjs`, `test_hardware_context.cjs`, `test_hardware_explorer.cjs`: numerical examples, carry propagation, threshold behavior, packet semantics and capture alignment checks.
 - `spectrogram3d.js`, `spectrogram-panel.js`: offline WebGL renderer and paired-view controls.
 - `test_spectrogram3d.cjs`, `test_spectrogram3d_view.cjs`: numerical scale, pooling, mesh, camera, input-validation, and mocked renderer-lifecycle tests.
 - `demo/catalog.json`: available sources, thresholds, and relative asset URLs.
@@ -96,6 +108,8 @@ Stage replay is available for 12 captures with an actual saved event history. Ot
 - `verify_demo.py`: asset, format, privacy, and integrity checks.
 
 Run `python verify_demo.py` to validate the portable bundle. It checks exported files; it does not rerun hardware or recreate benchmark timings.
+
+Run `node --test test_hardware_model.cjs test_hardware_context.cjs test_hardware_explorer.cjs` to check the explorer's worked arithmetic, carry logic and capture-context handling. Source review checks its descriptions against the published RTL. These checks validate the teaching view, not a new FPGA implementation.
 
 Run `node --test test_spectrogram3d.cjs test_spectrogram3d_view.cjs` with Node.js 18 or later for the 19 dependency-free renderer tests. The bundle verifier also checks local dashboard dependencies and script order. Interactive camera, playback, layout, and browser rendering require browser checks in addition to those tests.
 

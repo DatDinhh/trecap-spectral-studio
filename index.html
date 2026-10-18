@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="styles.css?v=technical-dark-20261017">
   <link rel="stylesheet" href="architecture-flow.css?v=technical-dark-20261017">
   <link rel="stylesheet" href="signal-lab.css?v=technical-dark-20261017">
+  <link rel="stylesheet" href="hardware-explorer.css?v=hardware-explorer-20261018">
 </head>
 <body>
   <a class="skip-link" href="#workspace">Skip to results</a>
@@ -48,6 +49,7 @@
     <div class="workspace" id="workspace" tabindex="-1">
       <section class="intro" aria-labelledby="workspace-title"><div><p class="eyebrow">FPGA AUDIO PROCESSING · RECORDED DEMO</p><h1 id="workspace-title">Hear it. See what changes.</h1><p class="intro-copy">Compare the original sound with recorded FPGA output, then inspect the spectral monitor.</p></div><span class="workspace-badge"><span aria-hidden="true">⌁</span> SIGNAL ANALYSIS</span></section>
       <div class="portable-notice"><span class="recorded-badge">RECORDED FPGA DEMO</span><p>Real outputs from a DE1-SoC board. Hardware execution is available only in the original local app. Laptop benchmarks were recorded on the original laptop.</p><a href="demo/ATTRIBUTION.md">Sources & attribution ↗</a></div>
+      <section id="hardware-explorer" aria-label="RTL to hardware explorer"></section>
       <section id="signal-lab" aria-label="Signal transformation laboratory"></section>
       <details class="signal-architecture-details"><summary>Open system architecture map <span>Follow data through the laptop, HPS and FPGA</span></summary><section id="architecture-atlas" aria-label="Animated system architecture"></section></details>
       <section id="processing-flow" class="processing-flow panel" aria-labelledby="flow-title" data-status="idle">
@@ -154,6 +156,9 @@
   <script src="spectrogram-panel.js?v=technical-dark-20261017" defer></script>
   <script src="signal-data.js?v=technical-dark-20261017" defer></script>
   <script src="signal-lab.js?v=technical-dark-20261017" defer></script>
-  <script src="app.js?v=technical-dark-20261017" defer></script>
+  <script src="hardware-model.js?v=hardware-explorer-20261018" defer></script>
+  <script src="hardware-context.js?v=hardware-explorer-20261018" defer></script>
+  <script src="hardware-explorer.js?v=hardware-explorer-20261018" defer></script>
+  <script src="app.js?v=hardware-explorer-20261018" defer></script>
 </body>
 </html>

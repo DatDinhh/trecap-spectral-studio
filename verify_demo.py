@@ -9,7 +9,7 @@ import sys
 import wave
 
 ROOT = Path(__file__).resolve().parent
-DASHBOARD_SCRIPTS = ('architecture-flow.js', 'pipeline.js', 'spectrogram3d.js', 'spectrogram-panel.js', 'signal-data.js', 'signal-lab.js', 'app.js')
+DASHBOARD_SCRIPTS = ('architecture-flow.js', 'pipeline.js', 'spectrogram3d.js', 'spectrogram-panel.js', 'signal-data.js', 'signal-lab.js', 'hardware-model.js', 'hardware-context.js', 'hardware-explorer.js', 'app.js')
 
 
 class DashboardLinks(HTMLParser):
@@ -32,13 +32,13 @@ def validate_dashboard():
     page.feed(asset('index.html').read_text(encoding='utf-8'))
     sources = [script.get('src', '').split('?')[0] for script in page.scripts]
     assert sources == list(DASHBOARD_SCRIPTS), 'Dashboard scripts are missing, duplicated or out of dependency order'
-    assert [url.split('?')[0] for url in page.stylesheets] == ['styles.css', 'architecture-flow.css', 'signal-lab.css'], 'Dashboard stylesheets must be local and ordered'
+    assert [url.split('?')[0] for url in page.stylesheets] == ['styles.css', 'architecture-flow.css', 'signal-lab.css', 'hardware-explorer.css'], 'Dashboard stylesheets must be local and ordered'
     for script in page.scripts:
         assert 'defer' in script and 'async' not in script, 'Dashboard scripts must preserve deferred dependency order'
         asset(script['src'].split('?')[0])
     for stylesheet in page.stylesheets:
         asset(stylesheet.split('?')[0])
-    for name in ('index.html', *DASHBOARD_SCRIPTS, 'styles.css', 'architecture-flow.css', 'signal-lab.css'):
+    for name in ('index.html', *DASHBOARD_SCRIPTS, 'styles.css', 'architecture-flow.css', 'signal-lab.css', 'hardware-explorer.css'):
         source = asset(name).read_text(encoding='utf-8')
         assert '\u2013' not in source and '\u2014' not in source, f'Forbidden dash character: {name}'
 
