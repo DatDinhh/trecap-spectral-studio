@@ -46,7 +46,7 @@ The walkthrough has eight teaching steps based on the [current architecture atla
 
 **Replay recorded run** drives the map from the saved outer job events. Internal motion is illustrative because FFT, IFFT, frame and FIFO activity were not individually timed. A completed, failed or disconnected job stops the motion. The separate walkthrough runs locally and does not request hardware access or create new capture results. Reduced-motion settings disable moving packets while preserving the controls and step explanations.
 
-1. Select one of the four machine recordings or eight synthetic controls.
+1. Select the piano excerpt, one of four machine recordings, or one of eight synthetic controls.
 2. Select one of that recording's available thresholds and load the capture.
 3. Listen before FPGA, listen after FPGA, or hear their difference. All three use the same playback gain.
 4. Open **Signal comparison** and explore the paired **3D surface** spectrograms. Drag either surface to rotate both, scroll to zoom, or select **Top view**. The bright cursor follows audio playback. **2D map** preserves the original spectrogram view.
@@ -55,7 +55,29 @@ The walkthrough has eight teaching steps based on the [current architecture atla
 
 Run `node --test test_architecture_flow.cjs` for the animation lifecycle and observation-state checks. `python verify_demo.py` checks the offline assets and unchanged recorded evidence.
 
-Run `node --test test_signal_data.cjs` to check frame alignment, zero padding, Q15 window coefficients, browser audio sample-rate handling, and every bundled frame's threshold mask and sparse packet size. The data check covers 77,996 frames across 41 result files. Dense powers use 952 bytes per frame, while sparse packets use `48 + 8K` bytes for `K` retained bins. Retained zero values still occupy entries, and a full sparse frame is larger than dense.
+Run `node --test test_signal_data.cjs` to check frame alignment, zero padding, Q15 window coefficients, browser audio sample-rate handling, and every bundled frame's threshold mask and sparse packet size. The data check covers 86,999 frames across 44 result files. Dense powers use 952 bytes per frame, while sparse packets use `48 + 8K` bytes for `K` retained bins. Retained zero values still occupy entries, and a full sparse frame is larger than dense.
+
+## Piano before and after FPGA processing
+
+The default capture is an eight-second excerpt of **Pistachio Ice Cream Ragtime**
+by **The Piano Lady (Lena Orsa)** at threshold **10^8**. Choose **Piano** in the
+sound list, then compare **0**, **10^8** and **10^10**. Listen before FPGA, after
+FPGA or to their difference, and use the same 2D and 3D spectrogram controls.
+
+These are archived physical DE1-SoC results from the piano FLAC experiment.
+The original Studio track is the signed 12-bit input actually supplied to the
+board. The returned waveform is aligned by 384 samples. All three listening
+modes use one fixed gain. Threshold zero reproduces that quantized input
+exactly. It is not a comparison against an untouched studio master.
+
+Piano captures include waveform error, spectral packet sizes and archived
+board-service timing. No laptop consumer timing, monitor events or stage
+replay was recorded for this experiment. Those fields are marked unavailable.
+The waveform and spectrum views remain fully interactive.
+
+The piano excerpt and its derivatives use **CC BY-NC 3.0**, with creator,
+source and license links beside the source selector and in
+[the audio attribution](demo/ATTRIBUTION.md#piano-recording).
 
 ## Interactive 3D spectrogram
 
@@ -67,12 +89,13 @@ For responsive rendering, the view groups playback-range spectral frames into at
 
 ## Included evidence and limits
 
-The catalog contains all 12 shareable built-in sounds and 40 actual captures.
+The catalog contains 13 shareable built-in sounds and 43 selectable actual captures.
 Previously published result versions remain in the repository, so the exported
-files currently contain 41 capture versions. Private audio uploads are excluded.
+files currently contain 44 capture versions. Private audio uploads are excluded.
 
 | Source | Included squared-magnitude thresholds |
 | --- | --- |
+| Piano | 0, 10^8, 10^10 |
 | Chainsaw | 0, 10^7, 10^8, 10^9, 10^10 |
 | Engine | 0, 10^7, 10^8, 10^10, 10^11 |
 | Vacuum cleaner | 0, 10^7, 10^8 |
@@ -92,7 +115,7 @@ Original audio is the prepared mono 48 kHz, signed 12-bit signal supplied to the
 
 Graphs and benchmark values are saved measurements from the original experiment. CPU timing labels refer to the original laptop, not the computer opening this demo. The 16-band consumer is a spectral-monitoring computation, not YAMNet inference. Lower spectral packet size is distinct from smaller WAV files, and lower downstream CPU work does not establish faster FPGA FFT/IFFT computation or lower system energy.
 
-Stage replay is available for 12 captures with an actual saved event history. Other captures still support audio, charts, and recorded metrics. The data set is a demonstration of the available built-in recordings, not a complete benchmark campaign or a validated diagnostic application. The full data bundle occupies approximately 208 MB; each result is loaded only when selected.
+Stage replay is available for 12 captures with an actual saved event history. Other captures still support audio, charts, and recorded metrics. The data set is a demonstration of the available built-in recordings, not a complete benchmark campaign or a validated diagnostic application. The data bundle loads each capture on demand.
 
 ## Files and validation
 
@@ -112,7 +135,7 @@ Stage replay is available for 12 captures with an actual saved event history. Ot
 - `run.py`: local server using Python's standard library.
 - `verify_demo.py`: asset, format, privacy, and integrity checks.
 
-Run `python verify_demo.py` to validate the portable bundle. It checks exported files; it does not rerun hardware or recreate benchmark timings.
+Run `python verify_demo.py` to validate the portable bundle. It checks exported files without rerunning hardware or recreating benchmark timings.
 
 Run `node --test test_hardware_model.cjs test_hardware_context.cjs test_hardware_explorer.cjs test_hardware_guide.cjs` to check the explorer's worked arithmetic, carry logic, capture-context handling and the guide's signal transformations. Source review checks its descriptions against the published RTL. These checks validate the teaching view, not a new FPGA implementation.
 
@@ -126,6 +149,6 @@ To add a result, export a verified physical capture with a shareable source lice
 
 ## Licenses and project
 
-Code is MIT licensed by Sigma Force. Audio and dataset-derived content retain their own licenses; see [audio attribution](demo/ATTRIBUTION.md) and [the ESC-50 license](demo/ESC50-LICENSE.txt). The ESC-50 collection is CC BY-NC 3.0; all four included natural recordings are individually identified as CC-BY. The eight synthetic signals are project-generated. Do not treat the MIT code license as an audio license.
+Code is MIT licensed by Sigma Force. Audio and dataset-derived content retain their own licenses. See [audio attribution](demo/ATTRIBUTION.md) and [the ESC-50 license](demo/ESC50-LICENSE.txt). The ESC-50 collection is CC BY-NC 3.0. All four included natural recordings are individually identified as CC-BY. The piano excerpt is separately licensed CC BY-NC 3.0. The eight synthetic signals are project-generated. Do not treat the MIT code license as an audio license.
 
 Hardware project: [DatDinhh/T_RECAP](https://github.com/DatDinhh/T_RECAP).

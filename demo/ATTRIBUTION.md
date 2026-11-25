@@ -1,12 +1,12 @@
 # Demo data attribution
 
-This demonstration includes 12 built-in sounds and 40 selectable completed physical
+This demonstration includes 13 built-in sounds and 43 selectable completed physical
 FPGA captures. Previously published capture versions remain in the repository.
 It is not a complete benchmark or a validation of machine fault
 detection. The stored CPU timings were measured on the original source laptop;
 opening this demo does not benchmark the viewer's computer.
 
-## Natural audio
+## Machine recordings
 
 All four individual source recordings are identified as CC-BY in the official ESC-50 attribution document.
 
@@ -41,6 +41,31 @@ uses the same fixed 8x conversion to mono PCM16, without independent normalizati
 The physical service processed an eight-second zero-padded transaction; playback
 and most plotted data show the original five-second clip.
 
+## Piano recording
+
+The eight-second piano excerpt is from **Pistachio Ice Cream Ragtime** by
+**The Piano Lady (Lena Orsa)**, [Freesound recording 442789](https://freesound.org/people/lena_orsa/sounds/442789/).
+It is licensed under [Creative Commons Attribution-NonCommercial 3.0](https://creativecommons.org/licenses/by-nc/3.0/).
+The title, creator and license come from the [pinned original attribution](https://github.com/librosa/data/blob/38f4b06556fa0ff1acda5e677d8ba05d1bc0fff0/audio/442789__lena-orsa__happy-music-pistachio-ice-cream-ragtime.txt).
+The recording and its derivatives are not covered by the MIT code license.
+Redistribution retains this credit and the noncommercial license. No endorsement is implied.
+
+Changes made: use the first eight seconds, average stereo channels to mono,
+resample from 44.1 kHz to 48 kHz and apply a fixed gain of 0.5 before PCM16
+preparation. Quantize that prepared signal to signed 12-bit samples for the
+FPGA. The Studio's Before FPGA track is this quantized board input, not the
+unquantized prepared PCM16 reference used in the FLAC comparison report.
+
+After FPGA uses the physically captured Y output at thresholds 0, 10^8 and
+10^10, with its 384-sample delay removed. All Studio playback tracks use the
+same fixed 8x integer conversion to PCM16. Difference is input minus output.
+Spectra use the actual captured TSP1 powers. Missing threshold settings have
+not been generated or interpolated. This excerpt has no recorded laptop
+consumer benchmark, monitor events or stage replay.
+
+The public [piano export verification](piano_export_verification.json) binds
+the playback and plotted data to the archived captures and their verification.
+
 ## Project-generated synthetic controls
 
 The eight 5.12-second, 48 kHz controls were generated deterministically by the
@@ -64,8 +89,9 @@ controls, not recordings of faults or evidence of a deployed diagnostic system.
 All exported outputs originate from physical DE1-SoC captures that passed exact
 comparison against the project's fixed-point software reference. Stored hashes
 identify original capture data; the portable edition does not repeat the
-hardware or reference verification. It preserves the numerical chart data and
-WAV bytes returned by the source application. See [manifest.json](manifest.json).
+hardware or reference verification. Machine and synthetic exports preserve the numerical chart data and WAV bytes
+returned by the source application. Piano chart arrays and playback WAVs are
+decoded from the verified archived captures without modifying the raw evidence. See [manifest.json](manifest.json).
 
 Stage animations, where available, replay event boundaries recorded during the
 same physical capture. The internal FFT, threshold and IFFT blocks have no

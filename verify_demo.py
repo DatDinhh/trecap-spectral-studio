@@ -93,7 +93,11 @@ def main():
     for source in catalog['sources']:
         asset(source['original_audio_url'])
         assert source['kind'] in ('natural', 'synthetic')
-        assert source['attribution']['source_license'] in ('CC-BY', 'Project-generated')
+        assert source['attribution']['source_license'] in ('CC-BY', 'CC BY-NC 3.0', 'Project-generated')
+        if source['attribution']['source_license'] == 'CC BY-NC 3.0':
+            assert source['attribution']['creator'] and source['attribution']['source_title']
+            assert source['attribution']['source_url'].startswith('https://')
+            assert source['attribution']['license_url'] == 'https://creativecommons.org/licenses/by-nc/3.0/'
         assert source['thresholds'] and source['thresholds'][0] == 0
         assert source['thresholds'] == sorted({c['threshold'] for c in source['cached_results']})
         assert len(source['thresholds']) == len(source['cached_results'])
@@ -133,7 +137,12 @@ def main():
         assert result['threshold'] == receipt['threshold']
         assert result['provenance']['mode'] == 'archived_physical'
         assert result['provenance']['full_reference_exact'] is True
-        assert result['cpu_timing']['recorded'] is True
+        if result['cpu_timing']['recorded'] is not True:
+            assert result['cpu_timing']['recorded'] is False
+            assert result['cpu_timing']['routes'] == []
+            assert result['cpu_timing']['scope']
+            for key in ('cpu_pcm_ms', 'sparse_consumer_ms', 'consumer_sparse_ms', 'dense_consumer_ms', 'consumer_dense_ms'):
+                assert result.get('metrics', {}).get(key) is None, f'Invented CPU timing: {rid}/{key}'
         for section, expected in receipt['numerical_sections_sha256'].items():
             raw = json.dumps(result[section], ensure_ascii=False, allow_nan=False, separators=(',', ':')).encode('utf-8')
             assert hashlib.sha256(raw).hexdigest() == expected, f'Numerical section mismatch: {rid}/{section}'
@@ -144,7 +153,22 @@ def main():
             assert original == processed, 'Threshold-zero waveform mismatch'
         for mode in ('original', 'processed', 'difference'):
             assert hashlib.sha256(asset(result['audio'][mode]).read_bytes()).hexdigest() == receipt['audio_sha256'][mode]
-        assert receipt['numeric_sections_unchanged'] and receipt['audio_bytes_unchanged'] and receipt['difference_samples_exact']
+        assert receipt['difference_samples_exact']
+        if receipt.get('export_kind') == 'archived_capture_adapter':
+            assert result['provenance']['export_kind'] == 'archived_capture_adapter'
+            assert receipt['numeric_sections_unchanged'] is False
+            assert receipt['numeric_sections_derived_from_archived_capture'] is True
+            assert receipt['audio_bytes_unchanged'] is False
+            assert receipt['audio_derived_from_archived_samples'] is True
+            assert receipt['raw_capture_bytes_unchanged'] is True
+            bindings = receipt['archive_capture_sha256']
+            assert set(bindings) >= {'input', 'y', 'wire', 'header', 'capture_receipt', 'verification'}
+            assert all(re.fullmatch(r'[0-9a-f]{64}', value) for value in bindings.values())
+            assert result['monitor']['available'] is False
+            assert result['monitor'].get('before', {}).get('events', []) == []
+            assert result['monitor'].get('after', {}).get('events', []) == []
+        else:
+            assert receipt['numeric_sections_unchanged'] and receipt['audio_bytes_unchanged']
         assert (receipt['stage_trace'] == 'recorded') == (ROOT / f'demo/replays/{rid}.json').is_file()
     for path in (ROOT / 'demo/replays').glob('*.json'):
         replay = read_json(path)

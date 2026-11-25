@@ -50,6 +50,7 @@
    for(const node of this.doc.querySelectorAll("[data-flow-stage], [data-flow-part]")){
     const stage=node.dataset.flowStage||node.dataset.flowPart;
     node.dataset.state=values[stage]||"waiting";
+    if(stage==="consumer"&&node.dataset.flowStage){const label=node.querySelector("small");if(label)label.textContent=values[stage]==="skipped"?"Not recorded":"Laptop monitor";}
     if(node.dataset.flowStage){if(values[stage]==="active")node.setAttribute("aria-current","step");else node.removeAttribute("aria-current");}
    }
   }
@@ -57,9 +58,11 @@
    this.stop();const panel=this.el("processing-flow");if(!panel)return;
    panel.dataset.status="complete";panel.dataset.phase="complete";panel.dataset.replay="false";panel.setAttribute("aria-busy","false");
    this.audioReady=options.audioReady!==false;
-   this.states(Object.fromEntries(stages.map(stage=>[stage,stage==="ready"&&!this.audioReady?"error":"done"])));this.text("flow-ready-label",this.audioReady?"Listen & compare":"Audio unavailable");
+   const consumerAvailable=result.monitor?.available??!!(result.monitor?.before?.length&&result.monitor?.after?.length);
+   this.states(Object.fromEntries(stages.map(stage=>[stage,stage==="consumer"&&!consumerAvailable?"skipped":stage==="ready"&&!this.audioReady?"error":"done"])));this.text("flow-ready-label",this.audioReady?"Listen & compare":"Audio unavailable");
    this.text("flow-replay-badge","RECORDED CAPTURE");this.text("flow-status","Completed physical capture");this.text("flow-elapsed","Saved result");
    this.text("flow-detail",options.hasReplay?"This capture already completed on the physical board. Replay its saved job events to follow the original timing.":"This capture already completed on the physical board. No event history was saved, so the completed signal path is shown without animation.");
+   if(!consumerAvailable)this.text("flow-detail",this.el("flow-detail").textContent+" No laptop monitor was recorded for this capture.");
    if(!this.audioReady)this.text("flow-detail",this.el("flow-detail").textContent+" Browser audio could not be loaded; recorded measurements remain available.");
    this.text("flow-source",options.source||result.sourceId);this.text("flow-threshold",`Threshold ${thresholdLabel(result.threshold)}`);this.text("flow-pass","Saved physical capture");this.text("flow-queue","No hardware execution");
    this.text("flow-transfer","Transfer timing and sizes are shown only during a replay of saved event data.");

@@ -54,6 +54,7 @@
     function pauseTour() { if (state.touring) { stopTour(); renderText(); requestDraw(); } else if (state.model && state.model.available) { if (state.playing && callbacks.pause) callbacks.pause(); state.touring = true; if (state.stage === STAGES.length - 1) state.stage = 0; renderText(); beginTransition(); scheduleStep(); } }
     function renderText() {
       var stage = STAGES[state.stage], model = state.model, available = !!(model && model.available);
+      if (stage.kind === 'consumer' && state.result && state.result.monitor && state.result.monitor.available === false) stage = Object.assign({}, stage, { title: 'No laptop monitor was recorded for this capture.', badge: 'Not recorded', leftSource: 'Not recorded', rightSource: 'Not recorded', body: 'This capture includes physical FPGA spectra and reconstructed audio. No downstream laptop monitor features or event analysis were saved, so this stage has no consumer result to display.', fact: 'Captured spectra and audio remain available in the preceding stages.' });
       mount.dataset.stage = stage.kind; mount.dataset.playing = String(state.touring);
       fields.title.textContent = stage.title; fields.badge.textContent = stage.badge; fields.body.textContent = stage.body; fields.fact.textContent = stage.fact;
       $('[data-sl-capture-label]').textContent = state.result ? String(state.result.label || state.result.sourceId || state.result.id || 'Selected capture') : 'No capture loaded';
